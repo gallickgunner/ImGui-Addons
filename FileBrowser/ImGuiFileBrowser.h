@@ -12,7 +12,8 @@ namespace imgui_addons
         public:
             ImGuiFileBrowser();
             ~ImGuiFileBrowser();
-            std::string showFileDialog(std::string label, ImVec2 sz_xy);
+            bool showFileDialog(std::string label, ImVec2 sz_xy);
+            std::string selected_fn;
 
         private:
             struct Info

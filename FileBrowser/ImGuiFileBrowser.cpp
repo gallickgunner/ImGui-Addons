@@ -36,10 +36,11 @@ namespace imgui_addons
 
     }
 
-    std::string ImGuiFileBrowser::showFileDialog(std::string label, ImVec2 sz_xy)
+    bool ImGuiFileBrowser::showFileDialog(std::string label, ImVec2 sz_xy)
     {
         ImGuiIO& io = ImGui::GetIO();
-        std::string selected_fn = "";
+        //Reset selected file name
+        selected_fn.clear();
         bool show_error = false;
 
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f,0.5f));
@@ -175,7 +176,7 @@ namespace imgui_addons
 
             ImGui::EndPopup();
         }
-        return selected_fn;
+        return (!selected_fn.empty());
     }
 
     bool ImGuiFileBrowser::onNavigationButtonClick(int idx)

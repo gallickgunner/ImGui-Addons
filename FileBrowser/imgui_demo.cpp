@@ -57,7 +57,9 @@ Index of this file:
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
+//For Custom widget
 #include "ImGuiFileBrowser.h"
+
 #include "imgui.h"
 #include <ctype.h>          // toupper
 #include <limits.h>         // INT_MIN, INT_MAX
@@ -313,7 +315,8 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::OpenPopup("Open File");
             show_filedialog = false;
         }
-        file_dialog.showFileDialog("Open File", ImVec2(600, 300));
+        if(file_dialog.showFileDialog("Open File", ImVec2(600, 300)))
+            printf("%s\n", file_dialog.selected_fn.c_str());
         ImGui::EndMenuBar();
     }
 
@@ -3519,7 +3522,8 @@ static void ShowExampleAppMainMenuBar()
             ImGui::OpenPopup("Open File");
             show_filedialog = false;
         }
-        file_dialog.showFileDialog("Open File", ImVec2(600, 300));
+        if(file_dialog.showFileDialog("Open File", ImVec2(600, 300)))
+            printf("%s\n", file_dialog.selected_fn.c_str());
         ImGui::EndMainMenuBar();
     }
 }
