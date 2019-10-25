@@ -8,5 +8,5 @@ I have tried my best to write platform independent code, on UNIX code uses stand
 
 Enough chitchat, here's a gif in-action, click for full video (I hope you guys don't consider me a weeb after seeing the screensavers collection xD )
 
-[![Demo](https://i.imgur.com/61Uj5m0.gif)](https://www.youtube.com/watch?v=BWy6tC04sWg)
+[![Demo](https://i.imgur.com/HcwKNmi.gif)](https://www.youtube.com/watch?v=cPyfgYFdiy0)
 
