@@ -15,17 +15,22 @@ namespace imgui_addons
             std::string showFileDialog(std::string label, ImVec2 sz_xy);
 
         private:
+            struct Info
+            {
+                std::string name;
+                bool is_hidden;
+            };
             std::string wStringToString(const wchar_t* wchar_arr);
             bool readDIR(std::string path);
             void parsePathTabs(std::string str);
-            void loadWindowsDrives(); // Windows Exclusive
             void showErrorModal();
+            bool loadWindowsDrives(); // Windows Exclusive
             bool onNavigationButtonClick(int idx);
             bool onContentClick(int idx, bool show_drives);
 
             std::vector<std::string> current_dirlist;
-            std::vector<std::string> subdirs;
-            std::vector<std::string> subfiles;
+            std::vector<Info> subdirs;
+            std::vector<Info> subfiles;
             std::string current_path;
             int col_items_limit, selected_idx;
             float col_width;

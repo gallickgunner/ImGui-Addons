@@ -21,12 +21,13 @@ namespace imgui_addons
     {
         is_dir = false;
         #ifdef OSWIN
-        UINT len = GetSystemWindowsDirectoryA(NULL, 0);
-        char sysdir[len];
-        if(GetSystemWindowsDirectoryA(sysdir, len) > 0)
-            current_path = std::string(1, sysdir[0]) + ":/";
+        if(loadWindowsDrives())
+            current_dirlist.push_back("Computer");
+        else
+            current_path = "./";
         #else
         current_path = "/";
+        current_dirlist.push_back("/");
         #endif
     }
 
@@ -37,15 +38,18 @@ namespace imgui_addons
 
     std::string ImGuiFileBrowser::showFileDialog(std::string label, ImVec2 sz_xy)
     {
+        ImGuiIO& io = ImGui::GetIO();
         std::string selected_fn = "";
         bool show_error = false;
 
-        ImGui::SetNextWindowPosCenter();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f,0.5f));
         ImGui::SetNextWindowContentSize(sz_xy);
-        if (ImGui::BeginPopupModal(label.c_str(), NULL, ImGuiWindowFlags_NoResize))
+        if (ImGui::BeginPopupModal(label.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            // If dirlist is empty, it's the start so read default directory (./) once
-            if(current_dirlist.empty())
+            /* If subdirs and subfiles are empty, either we are on Unix OS or loadWindowsDrives() failed.
+             * Hence read default directory (./) on Windows and "/" on Unix OS once
+             */
+            if(subdirs.empty() && subfiles.empty())
                 show_error |= !(readDIR(current_path));
 
             int num_cols = std::ceil((subdirs.size() + subfiles.size()) / (float) col_items_limit);
@@ -108,10 +112,10 @@ namespace imgui_addons
             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
             for (int i = 0; i < subdirs.size(); i++)
             {
-                if(filter.PassFilter(subdirs[i].c_str()))
+                if( (!subdirs[i].is_hidden | show_hidden) && filter.PassFilter(subdirs[i].name.c_str()))
                 {
                     filtered_items++;
-                    if(ImGui::Selectable(subdirs[i].c_str(), selected_idx == i && is_dir, ImGuiSelectableFlags_AllowDoubleClick))
+                    if(ImGui::Selectable(subdirs[i].name.c_str(), selected_idx == i && is_dir, ImGuiSelectableFlags_AllowDoubleClick))
                     {
                         selected_idx = i;
                         is_dir = true;
@@ -128,15 +132,15 @@ namespace imgui_addons
             //Output files
             for (int i = 0; i < subfiles.size(); i++)
             {
-                if(filter.PassFilter(subfiles[i].c_str()))
+                if( (!subfiles[i].is_hidden | show_hidden) && filter.PassFilter(subfiles[i].name.c_str()))
                 {
                     filtered_items++;
-                    if(ImGui::Selectable(subfiles[i].c_str(), selected_idx == i && !is_dir, ImGuiSelectableFlags_AllowDoubleClick))
+                    if(ImGui::Selectable(subfiles[i].name.c_str(), selected_idx == i && !is_dir, ImGuiSelectableFlags_AllowDoubleClick))
                     {
                         selected_idx = i;
                         is_dir = false;
                         if(ImGui::IsMouseDoubleClicked(0))
-                            selected_fn = subfiles[i];
+                            selected_fn = current_path + subfiles[i].name;
                     }
                     if( (filtered_items) % col_items_limit == 0)
                         ImGui::NextColumn();
@@ -147,8 +151,7 @@ namespace imgui_addons
 
             //Draw Remaining UI elements
             ImGui::SetCursorPosY(sz_xy.y);
-            if(ImGui::Checkbox("Show Hidden Files and Folders", &show_hidden))
-                readDIR(current_path);
+            ImGui::Checkbox("Show Hidden Files and Folders", &show_hidden);
 
             ImGui::SetCursorPos(ImVec2(sz_xy.x - 110, sz_xy.y));
             if (ImGui::Button("Open", ImVec2(50, 0)))
@@ -158,7 +161,7 @@ namespace imgui_addons
                     if(is_dir)
                        show_error |= !(onContentClick(selected_idx, show_drives));
                     else
-                        selected_fn = subfiles[selected_idx];
+                        selected_fn = current_path + subfiles[selected_idx].name;
                 }
             }
             ImGui::SameLine();
@@ -183,7 +186,8 @@ namespace imgui_addons
         //First Button corresponds to virtual folder Computer which lists all logical drives (hard disks and removables)
         if(idx == 0)
         {
-            loadWindowsDrives();
+            if(!loadWindowsDrives())
+                return false;
             current_path.clear();
             current_dirlist.erase(current_dirlist.begin()+idx+1, current_dirlist.end());
             return true;
@@ -212,7 +216,7 @@ namespace imgui_addons
 
     bool ImGuiFileBrowser::onContentClick(int idx, bool show_drives)
     {
-        std::string name = subdirs[idx];
+        std::string name = subdirs[idx].name;
         std::string new_path(current_path);
         if(name == "..")
         {
@@ -273,30 +277,30 @@ namespace imgui_addons
         struct dirent *ent;
         if ((dir = opendir (pathdir.c_str())) != NULL)
         {
-            // If it's the start, populate filebar with current path
-            if(current_dirlist.empty())
+            #ifdef OSWIN
+            // If we are on Windows and failed to load Windows Drives, populate filebar with default path
+            if(current_dirlist.empty() && current_path == "./")
             {
-                // If relative directory parse to absolute path.
-                if(current_path == "./")
-                {
-                    const wchar_t* absolute_path = dir->wdirp->patt;
-                    std::string current_directory = wStringToString(absolute_path);
-                    std::replace(current_directory.begin(), current_directory.end(), '\\', '/');
+                const wchar_t* absolute_path = dir->wdirp->patt;
+                std::string current_directory = wStringToString(absolute_path);
+                std::replace(current_directory.begin(), current_directory.end(), '\\', '/');
 
-                    //Remove trailing "/*" returned by ** dir->wdirp->patt **  Don't know if this exists in UNIX based OS
-                    current_path = current_directory.substr(0, current_directory.length()-2);
-                }
+                //Remove trailing "/*" returned by ** dir->wdirp->patt **  Don't know if this exists in UNIX based OS
+                current_path = current_directory.substr(0, current_directory.length()-2);
 
-                //Create a vector of each directory in the file path for the filepath bar
+                //Create a vector of each directory in the file path for the filepath bar. Not Necessary for linux as starting directory is "/"
                 parsePathTabs(current_path);
             }
+            #endif // OSWIN
 
             // store all the files and directories within directory
             subdirs.clear();
             subfiles.clear();
             selected_idx = -1;
+
             while ((ent = readdir (dir)) != NULL)
             {
+                bool is_hidden = false;
                 //Ignore current directory
                 if((ent->d_name[0] == '.' && ent->d_namlen == 1))
                     continue;
@@ -305,24 +309,21 @@ namespace imgui_addons
 
                     #ifdef OSWIN
                     std::string dir = pathdir + std::string(ent->d_name);
-                    unsigned long mask = FILE_ATTRIBUTE_SYSTEM;
-                    if(!show_hidden)
-                        mask |= FILE_ATTRIBUTE_HIDDEN;
-                    if (mask & GetFileAttributesA(dir.c_str()))
+                    // IF system file skip it...
+                    if (FILE_ATTRIBUTE_SYSTEM & GetFileAttributesA(dir.c_str()))
                         continue;
+                    if (FILE_ATTRIBUTE_HIDDEN & GetFileAttributesA(dir.c_str()))
+                        is_hidden = true;
                     #else
-                    if(!show_hidden)
-                    {
-                        if((ent->d_name[0] == '.' && ent->d_namlen > 1))
-                            continue;
-                    }
+                    if((ent->d_name[0] == '.' && ent->d_namlen > 1))
+                        is_hidden = true;
                     #endif // OSWIN
                 }
                 //Store directories and files in separate vectors
                 if(ent->d_type == DT_DIR)
-                    subdirs.push_back(std::string(ent->d_name));
+                    subdirs.push_back({std::string(ent->d_name), is_hidden});
                 else if(ent->d_type == DT_REG)
-                    subfiles.push_back(std::string(ent->d_name));
+                    subfiles.push_back({std::string(ent->d_name), is_hidden});
             }
             closedir (dir);
         }
@@ -339,14 +340,11 @@ namespace imgui_addons
         std::string path_element = "";
         std::string root = "";
 
-        #ifdef OSWIN
-            current_dirlist.push_back("Computer");
-            current_dirlist.push_back(path.substr(0,2));
-            path.erase(0,2);          // Erase the Drive letter and colon in path "X:/abc/xyz/etc...."
-        #else
-            current_dirlist.push_back("/");
-            path.erase(0,1);    // Unix file paths don't have colons AFAIK
-        #endif // OSWIN
+        current_dirlist.push_back("Computer");
+        current_dirlist.push_back(path.substr(0,2));
+
+        // Erase the Drive letter and colon in path "X:/abc/xyz/etc...."
+        path.erase(0,2);
         std::istringstream iss(path);
         while(std::getline(iss, path_element, '/'))
         {
@@ -355,25 +353,27 @@ namespace imgui_addons
         }
     }
 
-    void ImGuiFileBrowser::loadWindowsDrives()
+    bool ImGuiFileBrowser::loadWindowsDrives()
     {
         subdirs.clear();
         subfiles.clear();
         DWORD len = GetLogicalDriveStringsA(0,NULL);
         char drives[len];
-        GetLogicalDriveStringsA(len,drives);
+        if(!GetLogicalDriveStringsA(len,drives))
+            return false;
 
         char* temp = drives;
         for(char *drv = NULL; *temp != NULL; temp++)
         {
             drv = temp;
             if(DRIVE_REMOVABLE == GetDriveTypeA(drv))
-                subdirs.push_back("Removable Disk: " + std::string(1,drv[0]));
+                subdirs.push_back({"Removable Disk: " + std::string(1,drv[0]), false});
             else if(DRIVE_FIXED == GetDriveTypeA(drv))
-                subdirs.push_back("Local Disk: " + std::string(1,drv[0]));
+                subdirs.push_back({"Local Disk: " + std::string(1,drv[0]), false});
             //Go to null character
             while(*(++temp));
         }
+        return true;
     }
 
     std::string ImGuiFileBrowser::wStringToString(const wchar_t* wchar_arr)
