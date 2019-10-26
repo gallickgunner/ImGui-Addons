@@ -7,7 +7,7 @@
 #include <iostream>
 #include <cmath>
 
-#if defined (WIN32) || defined (_WIN32)
+#if defined (WIN32) || defined (_WIN32) || defined (__WIN32)
 #define OSWIN
 #include "Dirent/dirent.h"
 #include <windows.h>
@@ -302,10 +302,11 @@ namespace imgui_addons
             while ((ent = readdir (dir)) != NULL)
             {
                 bool is_hidden = false;
+                std::string name(ent->d_name);
                 //Ignore current directory
-                if((ent->d_name[0] == '.' && ent->d_namlen == 1))
+                if(name == ".")
                     continue;
-                if( !(ent->d_namlen == 2 && ent->d_name[0] == '.' && ent->d_name[1] == '.') )
+                if(name != "..")
                 {
 
                     #ifdef OSWIN
@@ -322,9 +323,9 @@ namespace imgui_addons
                 }
                 //Store directories and files in separate vectors
                 if(ent->d_type == DT_DIR)
-                    subdirs.push_back({std::string(ent->d_name), is_hidden});
+                    subdirs.push_back({name, is_hidden});
                 else if(ent->d_type == DT_REG)
-                    subfiles.push_back({std::string(ent->d_name), is_hidden});
+                    subfiles.push_back({name, is_hidden});
             }
             closedir (dir);
         }
@@ -353,7 +354,20 @@ namespace imgui_addons
                 current_dirlist.push_back(path_element);
         }
     }
+    std::string ImGuiFileBrowser::wStringToString(const wchar_t* wchar_arr)
+    {
+        std::mbstate_t state = std::mbstate_t();
+         //MinGW bug (patched in mingw-w64), wcsrtombs doesn't ignore length parameter when dest = null. Hence the large number.
+        size_t len = 1 + std::wcsrtombs(NULL, &(wchar_arr), 600000, &state);
 
+        char char_arr[len];
+        std::wcsrtombs(char_arr, &wchar_arr, len, &state);
+        return std::string(char_arr);
+
+    }
+
+    //Windows Exclusive function
+    #ifdef OSWIN
     bool ImGuiFileBrowser::loadWindowsDrives()
     {
         subdirs.clear();
@@ -376,16 +390,5 @@ namespace imgui_addons
         }
         return true;
     }
-
-    std::string ImGuiFileBrowser::wStringToString(const wchar_t* wchar_arr)
-    {
-        std::mbstate_t state = std::mbstate_t();
-         //MinGW bug (patched in mingw-w64), wcsrtombs doesn't ignore length parameter when dest = null. Hence the large number.
-        size_t len = 1 + std::wcsrtombs(NULL, &(wchar_arr), 600000, &state);
-
-        char char_arr[len];
-        std::wcsrtombs(char_arr, &wchar_arr, len, &state);
-        return std::string(char_arr);
-
-    }
+    #endif
 }

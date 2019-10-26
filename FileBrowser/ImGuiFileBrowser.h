@@ -25,9 +25,11 @@ namespace imgui_addons
             bool readDIR(std::string path);
             void parsePathTabs(std::string str);
             void showErrorModal();
-            bool loadWindowsDrives(); // Windows Exclusive
             bool onNavigationButtonClick(int idx);
             bool onContentClick(int idx, bool show_drives);
+            #if defined (WIN32) || defined (_WIN32) || defined (__WIN32)
+            bool loadWindowsDrives(); // Windows Exclusive
+            #endif
 
             std::vector<std::string> current_dirlist;
             std::vector<Info> subdirs;
