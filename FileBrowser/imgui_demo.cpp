@@ -119,10 +119,6 @@ Index of this file:
 
 #if !defined(IMGUI_DISABLE_DEMO_WINDOWS)
 
-//For Demonstrating Custom Addon
-static imgui_addons::ImGuiFileBrowser file_dialog;
-static bool show_filedialog = false;
-
 // Forward Declarations
 static void ShowExampleAppDocuments(bool* p_open);
 static void ShowExampleAppMainMenuBar();
@@ -196,12 +192,16 @@ static void ShowDemoWindowLayout();
 static void ShowDemoWindowPopups();
 static void ShowDemoWindowColumns();
 static void ShowDemoWindowMisc();
-
+static bool show_filedialog = false;
 // Demonstrate most Dear ImGui features (this is big function!)
 // You may execute this function to experiment with the UI and understand what it does. You may then search for keywords in the code when you are interested by a specific feature.
 void ImGui::ShowDemoWindow(bool* p_open)
 {
     IM_ASSERT(ImGui::GetCurrentContext() != NULL && "Missing dear imgui context. Refer to examples app!"); // Exceptionally add an extra assert here for people confused with initial dear imgui setup
+
+    //For Demonstrating File Dialog Addon accessible from MainMenu bar (from Examples Menu) or simple Menu bar
+    static imgui_addons::ImGuiFileBrowser file_dialog;
+
 
     // Examples Apps (accessible from the "Examples" menu)
     static bool show_app_documents = false;
@@ -315,7 +315,8 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::OpenPopup("Open File");
             show_filedialog = false;
         }
-        if(file_dialog.showFileDialog("Open File", ImVec2(600, 300)))
+        //Show a file dialog. 3rd argument provides a list of supported files. Selecting other files will show error
+        if(file_dialog.showFileDialog("Open File", ImVec2(600, 300), ".rar,.zip,.7z,.tar"))
             printf("%s\n", file_dialog.selected_fn.c_str());
         ImGui::EndMenuBar();
     }
@@ -3517,13 +3518,6 @@ static void ShowExampleAppMainMenuBar()
             if (ImGui::MenuItem("Paste", "CTRL+V")) {}
             ImGui::EndMenu();
         }
-        if(show_filedialog)
-        {
-            ImGui::OpenPopup("Open File");
-            show_filedialog = false;
-        }
-        if(file_dialog.showFileDialog("Open File", ImVec2(600, 300)))
-            printf("%s\n", file_dialog.selected_fn.c_str());
         ImGui::EndMainMenuBar();
     }
 }
