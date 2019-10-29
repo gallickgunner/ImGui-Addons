@@ -1,10 +1,13 @@
+
 # ImGui-Addons
 Addon widgets for GUI library Dear ImGui.
 
 ## File Dialog
-A simple file dialog that uses [dirent](https://github.com/tronkko/dirent) interface for reading directories and files. It's present as a standard header file in Unix based systems afaik and is also contained in some compilers like MinGW but I have decided to use Toni Rönkkö's ported version so atleast the code remains compiler independent. 
+A simple cross-platform file dialog that uses [dirent](https://github.com/tronkko/dirent) interface for reading directories and files. It's present as a standard header file in Unix based systems afaik and is also contained in some compilers like MinGW but I have decided to use Toni Rönkkö's ported version so atleast the code remains compiler independent. 
 
-I have tried my best to write platform independent code, on UNIX code uses standard `dirent.h` header, but unfortunately the code hasn't been checked for UNIX based systems. If someone is willing to help me test it on Linux/Mac I'd be grateful. Also I don't think the code will work with Unicode paths containing language specific or other special characters as I blatantly use normal `char*` and `std::string` everywhere. The ported `dirent.h` for Windows uses `wcstombs` function to convert widechars to multibyte sequences but according to the docs this also fails if a wide character that doesnt' correspond to a valid Mulitbyte char is encountered. Anyways Not an expert at this topic so you may find errors if your paths contain special characters outside the normal 0-255 range.
+Code uses ported `dirent.h` provided by Toni on Windows and on UNIX code uses standard `dirent.h` header, but unfortunately the code hasn't been checked extensively on UNIX based systems especially MacOS. So if someone finds problems on other platforms do tell me or submit a pull request. Also I don't think the code will work with Unicode paths containing language specific or other special characters as I blatantly use normal `char*` and `std::string` everywhere. The ported `dirent.h` for Windows uses `wcstombs` function to convert widechars to multibyte sequences but according to the docs this also fails if a wide character that doesnt' correspond to a valid Mulitbyte char is encountered. Anyways Not an expert at this topic so you may find errors if your paths contain special characters outside the normal 0-255 range.
+
+Thanks to @bwrsandman, the code was tested on linux and runs fine except except that double clicks don't work all the time. This might be due to problems in ImGui itself or a problem on a specific computer only. So if anybody else encounters any issues do tell me.
 
 ### Usage
 Copy all the necessary ImGui files in one folder and include it's path in your IDE. Also include the path to `Dirent` folder so `dirent.h` is accessible as `Dirent/dirent.h`. Now include `ImGuiFileBrowser.h` and use it like this..
@@ -29,7 +32,10 @@ void showMainMenu()
 	//Remember the name to ImGui::OpenPopup() and showFileDialog() must be same...
 	if(open)
 	    ImGui::OpenPopup("Open File");
-	if(file_dialog.showFileDialog("Open File", ImVec2(700, 310)))
+	 /* Optional third parameter. Support opening only compressed rar/zip files. 
+          * Opening any other file will show error, return false and won't close the dialog.
+          */
+	if(file_dialog.showFileDialog("Open File", ImVec2(700, 310), ".rar,.zip,.7z"))
 	    std::cout << file_dialog.selected_fn << std::endl;
 }
 ```
