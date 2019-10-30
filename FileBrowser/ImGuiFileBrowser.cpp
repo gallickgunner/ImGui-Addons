@@ -355,7 +355,7 @@ namespace imgui_addons
                     if (FILE_ATTRIBUTE_HIDDEN & GetFileAttributesA(dir.c_str()))
                         is_hidden = true;
                     #else
-                    if(name[0] = ".")
+                    if(name[0] == '.')
                         is_hidden = true;
                     #endif // OSWIN
                 }
