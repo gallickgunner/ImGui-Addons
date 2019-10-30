@@ -385,7 +385,7 @@ namespace imgui_addons
         {
             std::string text = "Error opening directory! Make sure you have the proper rights to access the directory.";
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 6);
-            ImGui::TextWrapped(text.c_str());
+            ImGui::TextWrapped("%s", text.c_str());
 
             ImGui::Separator();
             ImGui::SetCursorPos(ImVec2(window_size.x/2.0 - 25, 120 - ImGui::GetFrameHeightWithSpacing() - ImGui::GetStyle().WindowPadding.y));
@@ -405,13 +405,13 @@ namespace imgui_addons
             float frame_height = ImGui::GetFrameHeightWithSpacing();
 
             std::string text = "Selected file is not supported. Please select a file with the following extensions...";
-            ImGui::TextWrapped(text.c_str());
+            ImGui::TextWrapped("%s", text.c_str());
 
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 5);
             ImGui::SetNextWindowContentSize(ImVec2(0, 17 * valid_exts.size() ));
             ImGui::BeginChild("##SupportedExts", ImVec2(0, -35), true);
             for(int i = 0; i < valid_exts.size(); i++)
-                ImGui::BulletText(valid_exts[i].c_str());
+                ImGui::BulletText("%s", valid_exts[i].c_str());
             ImGui::EndChild();
 
             ImGui::SetCursorPos(ImVec2(window_size.x/2.0 - 25, height - ImGui::GetFrameHeightWithSpacing() - ImGui::GetStyle().WindowPadding.y));
