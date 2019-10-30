@@ -28,5 +28,6 @@ script: |
           -I imgui/examples \
           -I /usr/include/SDL2 \
           -lSDL2 -lGL -lGLEW \
+          -Werror \
           -o example_sdl_opengl3
 
