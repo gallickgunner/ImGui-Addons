@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/gallickgunner/ImGui-Addons.svg?branch=master)](https://travis-ci.org/gallickgunner/ImGui-Addons)
 
 # ImGui-Addons
 Addon widgets for GUI library Dear ImGui.
