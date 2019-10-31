@@ -361,9 +361,9 @@ namespace imgui_addons
                 }
                 //Store directories and files in separate vectors
                 if(ent->d_type == DT_DIR)
-                    subdirs.push_back({name, is_hidden});
+                    subdirs.push_back(Info(name, is_hidden));
                 else if(ent->d_type == DT_REG)
-                    subfiles.push_back({name, is_hidden});
+                    subfiles.push_back(Info(name, is_hidden));
             }
             closedir (dir);
             std::sort(subdirs.begin(), subdirs.end(), alphaSortComparator);

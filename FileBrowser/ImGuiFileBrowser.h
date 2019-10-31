@@ -18,6 +18,9 @@ namespace imgui_addons
         private:
             struct Info
             {
+                Info(std::string name, bool is_hidden) : name(name), is_hidden(is_hidden)
+                {
+                }
                 std::string name;
                 bool is_hidden;
             };
