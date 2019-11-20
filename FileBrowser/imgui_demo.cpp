@@ -192,7 +192,9 @@ static void ShowDemoWindowLayout();
 static void ShowDemoWindowPopups();
 static void ShowDemoWindowColumns();
 static void ShowDemoWindowMisc();
-static bool show_filedialog = false;
+static bool show_open_dialog = false;
+static bool show_save_dialog = false;
+
 // Demonstrate most Dear ImGui features (this is big function!)
 // You may execute this function to experiment with the UI and understand what it does. You may then search for keywords in the code when you are interested by a specific feature.
 void ImGui::ShowDemoWindow(bool* p_open)
@@ -310,13 +312,21 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::MenuItem("About Dear ImGui", NULL, &show_app_about);
             ImGui::EndMenu();
         }
-        if(show_filedialog)
+        if(show_open_dialog)
         {
             ImGui::OpenPopup("Open File");
-            show_filedialog = false;
+            show_open_dialog = false;
         }
-        //Show a file dialog. 3rd argument provides a list of supported files. Selecting other files will show error
-        if(file_dialog.showFileDialog("Open File", ImVec2(600, 300), ".rar,.zip,.7z,.tar"))
+        else if (show_save_dialog)
+        {
+            ImGui::OpenPopup("Save File");
+            show_save_dialog = false;
+        }
+        //Show an open file dialog. 3rd argument provides a list of supported files. Selecting other files will show error
+        if(file_dialog.showOpenFileDialog("Open File", ImVec2(600, 300), ".rar,.zip,.7z,.tar"))
+            printf("%s\n", file_dialog.selected_fn.c_str());
+
+        if(file_dialog.showSaveFileDialog("Save File", ImVec2(600, 300), ".png,.jpg,.bmp"))
             printf("%s\n", file_dialog.selected_fn.c_str());
         ImGui::EndMenuBar();
     }
@@ -3527,7 +3537,7 @@ static void ShowExampleMenuFile()
 {
     ImGui::MenuItem("(dummy menu)", NULL, false, false);
     if (ImGui::MenuItem("New")) {}
-    if (ImGui::MenuItem("Open", "Ctrl+O")) { show_filedialog = true; }
+    if (ImGui::MenuItem("Open", "Ctrl+O")) { show_open_dialog = true; }
     if (ImGui::BeginMenu("Open Recent"))
     {
         ImGui::MenuItem("fish_hat.c");
@@ -3547,7 +3557,7 @@ static void ShowExampleMenuFile()
         ImGui::EndMenu();
     }
     if (ImGui::MenuItem("Save", "Ctrl+S")) {}
-    if (ImGui::MenuItem("Save As..")) {}
+    if (ImGui::MenuItem("Save As..")) { show_save_dialog = true; }
     ImGui::Separator();
     if (ImGui::BeginMenu("Options"))
     {
