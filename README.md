@@ -28,6 +28,8 @@ void showMainMenu()
 	            open = true;
 		if (ImGui::MenuItem("Save", NULL))
 	            save = true;
+		    
+		ImGui::EndMenu();
 	    }
 	    ImGui::EndMainMenuBar();
 	}
