@@ -677,9 +677,13 @@ namespace imgui_addons
          //MinGW bug (patched in mingw-w64), wcsrtombs doesn't ignore length parameter when dest = null. Hence the large number.
         size_t len = 1 + std::wcsrtombs(NULL, &(wchar_arr), 600000, &state);
 
-        char char_arr[len];
+        char* char_arr = new char[len];
         std::wcsrtombs(char_arr, &wchar_arr, len, &state);
-        return std::string(char_arr);
+
+        auto ret_val = std::string(char_arr);
+
+        delete[] char_arr;
+        return ret_val
     }
 
     bool ImGuiFileBrowser::alphaSortComparator(const Info& a, const Info& b)
@@ -719,9 +723,13 @@ namespace imgui_addons
     bool ImGuiFileBrowser::loadWindowsDrives()
     {
         DWORD len = GetLogicalDriveStringsA(0,NULL);
-        char drives[len];
+        char* drives = new char[len];
         if(!GetLogicalDriveStringsA(len,drives))
+        {
+            delete[] drives;
             return false;
+        }
+
 
         clearOldEntries();
         char* temp = drives;
@@ -735,6 +743,7 @@ namespace imgui_addons
             //Go to null character
             while(*(++temp));
         }
+        delete[] drives;
         return true;
     }
     #endif
