@@ -683,7 +683,7 @@ namespace imgui_addons
         auto ret_val = std::string(char_arr);
 
         delete[] char_arr;
-        return ret_val
+        return ret_val;
     }
 
     bool ImGuiFileBrowser::alphaSortComparator(const Info& a, const Info& b)
