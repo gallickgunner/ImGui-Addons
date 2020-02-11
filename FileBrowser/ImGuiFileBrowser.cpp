@@ -54,7 +54,7 @@ namespace imgui_addons
         ImGui::CloseCurrentPopup();
     }
 
-    bool ImGuiFileBrowser::showOpenFileDialog(std::string label, ImVec2 sz_xy, const std::string& valid_types)
+    bool ImGuiFileBrowser::showOpenFileDialog(const std::string& label, const ImVec2& sz_xy, const std::string& valid_types)
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f,0.5f));
@@ -92,7 +92,9 @@ namespace imgui_addons
             ImGui::Checkbox("Show Hidden Files and Folders", &show_hidden);
             ImGui::SameLine();
 
-            ImGui::SetCursorPosX(sz_xy.x - 100);
+            ImGuiContext& g = *GImGui;
+            ImGuiStyle& style = g.Style;
+            ImGui::SetCursorPosX(sz_xy.x - 100 - style.ItemSpacing.x);
             if (ImGui::Button("Open", ImVec2(50, 0)))
             {
                 if(selected_idx >= 0)
@@ -134,7 +136,7 @@ namespace imgui_addons
 
     }
 
-    bool ImGuiFileBrowser::showSaveFileDialog(std::string label, ImVec2 sz_xy, const std::string& valid_types)
+    bool ImGuiFileBrowser::showSaveFileDialog(const std::string& label, const ImVec2& sz_xy, const std::string& valid_types)
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f,0.5f));
@@ -217,7 +219,9 @@ namespace imgui_addons
             ImGui::Checkbox("Show Hidden Files and Folders", &show_hidden);
             ImGui::SameLine();
 
-            ImGui::SetCursorPosX(sz_xy.x - 100);
+            ImGuiContext& g = *GImGui;
+            ImGuiStyle& style = g.Style;
+            ImGui::SetCursorPosX(sz_xy.x - 100 - style.ItemSpacing.x);
             if(selected_idx != -1 && is_dir && ImGui::GetFocusID() != ImGui::GetID("##SaveFileNameInput"))
             {
                 if (ImGui::Button("Open", ImVec2(50, 0)))
@@ -259,6 +263,88 @@ namespace imgui_addons
         }
         else
             return false;
+    }
+
+
+    bool ImGuiFileBrowser::showSelectDirectoryDialog(const std::string& label, const ImVec2& sz_xy)
+    {
+        ImGuiIO& io = ImGui::GetIO();
+        ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f,0.5f));
+        ImGui::SetNextWindowContentSize(sz_xy);
+        if (ImGui::BeginPopupModal(label.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+        {
+            selected_fn.clear();
+            bool show_error = false;
+
+            /* If subdirs and subfiles are empty, either we are on Unix OS or loadWindowsDrives() failed.
+             * Hence read default directory (./) on Windows and "/" on Unix OS once
+             */
+            if(subdirs.empty() && subfiles.empty())
+                show_error |= !(readDIR(current_path));
+
+            // Render top file bar for easy navigation
+            show_error |= renderFileBar();
+
+            ImGui::Separator();
+
+            renderItemFilter(sz_xy);
+
+            //Output directories in yellow
+            bool show_drives = false;
+            #ifdef OSWIN
+            (current_dirlist.back() == "Computer") ? show_drives = true : show_drives = false;
+            #endif // OSWIN
+
+            show_error |= renderFileList(sz_xy, filtered_dirs, std::vector<const Info*>(), show_drives);
+
+            //Draw Remaining UI elements
+            float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
+            ImGui::SetCursorPosY(ImGui::GetWindowSize().y - frame_height_spacing - ImGui::GetStyle().WindowPadding.y);
+            ImGui::Checkbox("Show Hidden Folders", &show_hidden);
+            ImGui::SameLine();
+
+            ImGuiContext& g = *GImGui;
+            ImGuiStyle& style = g.Style;
+            ImGui::SetCursorPosX(sz_xy.x - 150 - 2 * style.ItemSpacing.x);
+            if (ImGui::Button("Open", ImVec2(50, 0)))
+            {
+                if(selected_idx >= 0 && is_dir)
+                    show_error |= !(onDirClick(selected_idx, show_drives, filtered_dirs));
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Select", ImVec2(50, 0)))
+            {
+                if(selected_idx >= 0 && is_dir)
+                    selected_fn = current_path + filtered_dirs[selected_idx]->name;
+                else
+                    selected_fn = current_path;
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(50, 0)))
+                closeDialog();
+
+            // Check if a file was selected.
+            if(!selected_fn.empty() && !is_dir)
+            {
+                ImGui::OpenPopup("Invalid Directory!");
+                selected_fn.clear();
+            }
+            showInvalidFileModal();
+
+            //Show Error Modal if there was an error opening any directory
+            if(show_error)
+                ImGui::OpenPopup(error_title.c_str());
+            showErrorModal();
+
+            //If selected file passes through validation check, close file dialog
+            if(!selected_fn.empty())
+                closeDialog();
+            ImGui::EndPopup();
+            return !selected_fn.empty();
+        }
+        else
+            return false;
+
     }
 
 

@@ -16,12 +16,17 @@ namespace imgui_addons
             /* Use this to show an open file dialog. The function takes label for the window,
              * the size and optionally the extensions that are valid for opening.
              */
-            bool showOpenFileDialog(std::string label, ImVec2 sz_xy, const std::string& valid_types = "");
+            bool showOpenFileDialog(const std::string& label, const ImVec2& sz_xy, const std::string& valid_types = "");
 
             /* Use this to open a save file dialog. The function takes label for the window,
              * the size and the extensions or types of files allowed for saving
              */
-            bool showSaveFileDialog(std::string label, ImVec2 sz_xy, const std::string& valid_types);
+            bool showSaveFileDialog(const std::string& label, const ImVec2& sz_xy, const std::string& valid_types);
+
+            /* Use this to open a select directory dialog. The function takes label for the
+             * window, and the size.
+             */
+            bool showSelectDirectoryDialog(const std::string& label, const ImVec2& sz_xy);
             std::string selected_fn;    // Store the opened/saved file name. Should only be accessed when above functions return true else may contain garbage.
             std::string ext;    // Store the saved file extension
 
