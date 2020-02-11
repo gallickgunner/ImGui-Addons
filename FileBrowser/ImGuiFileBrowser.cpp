@@ -54,28 +54,14 @@ namespace imgui_addons
         ImGui::CloseCurrentPopup();
     }
 
-    bool ImGuiFileBrowser::showOpenFileDialog(std::string label, ImVec2 sz_xy, std::string valid_types)
+    bool ImGuiFileBrowser::showOpenFileDialog(std::string label, ImVec2 sz_xy, const std::string& valid_types)
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f,0.5f));
         ImGui::SetNextWindowContentSize(sz_xy);
         if (ImGui::BeginPopupModal(label.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            /* Initialize a list of files extensions that are valid. If the user chooses a file that doesn't match
-             * the extensions in the list, show an error modal...
-             */
-            if(this->valid_types != valid_types)
-            {
-                this->valid_types = valid_types;
-                valid_exts.clear();
-                std::string ext = "";
-                std::istringstream iss(valid_types);
-                while(std::getline(iss, ext, ','))
-                {
-                    if(!ext.empty())
-                        valid_exts.push_back(ext);
-                }
-            }
+            setValidExtTypes(valid_types);
             selected_fn.clear();
             bool show_error = false;
 
@@ -148,25 +134,15 @@ namespace imgui_addons
 
     }
 
-    bool ImGuiFileBrowser::showSaveFileDialog(std::string label, ImVec2 sz_xy, std::string save_types)
+    bool ImGuiFileBrowser::showSaveFileDialog(std::string label, ImVec2 sz_xy, const std::string& valid_types)
     {
         ImGuiIO& io = ImGui::GetIO();
         ImGui::SetNextWindowPos(ImVec2(io.DisplaySize.x * 0.5f, io.DisplaySize.y * 0.5f), ImGuiCond_Always, ImVec2(0.5f,0.5f));
         ImGui::SetNextWindowContentSize(sz_xy);
         if (ImGui::BeginPopupModal(label.c_str(), NULL, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            if(this->valid_types != save_types)
-            {
-                this->valid_types = save_types;
-                valid_exts.clear();
-                std::string ext = "";
-                std::istringstream iss(save_types);
-                while(std::getline(iss, ext, ','))
-                {
-                    if(!ext.empty())
-                        valid_exts.push_back(ext);
-                }
-            }
+            setValidExtTypes(valid_types);
+
             selected_fn.clear();
             bool show_error = false;
 
@@ -283,6 +259,27 @@ namespace imgui_addons
         }
         else
             return false;
+    }
+
+
+    void ImGuiFileBrowser::setValidExtTypes(const std::string& valid_types_string)
+    {
+        /* Initialize a list of files extensions that are valid.
+         * If the user chooses a file that doesn't match the extensions in the
+         * list, show an error modal...
+         */
+        if(this->valid_types != valid_types_string)
+        {
+            this->valid_types = valid_types_string;
+            valid_exts.clear();
+            std::string extension = "";
+            std::istringstream iss(valid_types_string);
+            while(std::getline(iss, extension, ','))
+            {
+                if(!extension.empty())
+                    valid_exts.push_back(extension);
+            }
+        }
     }
 
     bool ImGuiFileBrowser::renderFileBar()
