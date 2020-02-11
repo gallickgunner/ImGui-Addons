@@ -78,7 +78,6 @@ namespace imgui_addons
             }
             selected_fn.clear();
             bool show_error = false;
-            int filtered_items = 0;
 
             /* If subdirs and subfiles are empty, either we are on Unix OS or loadWindowsDrives() failed.
              * Hence read default directory (./) on Windows and "/" on Unix OS once
@@ -118,15 +117,7 @@ namespace imgui_addons
             if(ImGui::GetFocusID() == ImGui::GetID("Filter (inc, -exc)"))
                 selected_idx = -1;
 
-            //Reinitialize the limit on number of selectables in one column based on height
-            col_items_limit = (sz_xy.y - 119) / 17;
-            int num_cols = std::max(1.0f, std::ceil((filtered_dirs.size() + filtered_files.size()) / (float) col_items_limit));
-            float content_width = std::max(sz_xy.x - ImGui::GetStyle().WindowPadding.x * 2, num_cols * col_width);
-
             ImGui::SetCursorPos(cursor_pos);
-            ImGui::SetNextWindowContentSize(ImVec2(content_width, 0.0f));
-            ImGui::BeginChild("##ScrollingRegion", ImVec2(0, -70), true, ImGuiWindowFlags_HorizontalScrollbar);
-            ImGui::Columns(num_cols);
 
             //Output directories in yellow
             bool show_drives = false;
@@ -134,44 +125,7 @@ namespace imgui_addons
             (current_dirlist.back() == "Computer") ? show_drives = true : show_drives = false;
             #endif // OSWIN
 
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
-            for (int i = 0; i < filtered_dirs.size(); i++)
-            {
-                if(!filtered_dirs[i]->is_hidden || show_hidden)
-                {
-                    filtered_items++;
-                    if(ImGui::Selectable(filtered_dirs[i]->name.c_str(), selected_idx == i && is_dir, ImGuiSelectableFlags_AllowDoubleClick))
-                    {
-                        selected_idx = i;
-                        is_dir = true;
-                        if(ImGui::IsMouseDoubleClicked(0))
-                            show_error |= !(onDirClick(i, show_drives, false));
-                    }
-                    if( (filtered_items) % col_items_limit == 0)
-                        ImGui::NextColumn();
-                }
-            }
-            ImGui::PopStyleColor(1);
-
-            //Output files
-            for (int i = 0; i < filtered_files.size(); i++)
-            {
-                if(!filtered_files[i]->is_hidden || show_hidden)
-                {
-                    filtered_items++;
-                    if(ImGui::Selectable(filtered_files[i]->name.c_str(), selected_idx == i && !is_dir, ImGuiSelectableFlags_AllowDoubleClick))
-                    {
-                        selected_idx = i;
-                        is_dir = false;
-                        if(ImGui::IsMouseDoubleClicked(0))
-                            selected_fn = current_path + filtered_files[i]->name;
-                    }
-                    if( (filtered_items) % col_items_limit == 0)
-                        ImGui::NextColumn();
-                }
-            }
-            ImGui::Columns(1);
-            ImGui::EndChild();
+            show_error |= renderFileList(sz_xy, filtered_dirs, filtered_files, show_drives);
 
             //Draw Remaining UI elements
             ImGui::SetCursorPosY(ImGui::GetWindowSize().y - frame_height_spacing - ImGui::GetStyle().WindowPadding.y);
@@ -184,7 +138,7 @@ namespace imgui_addons
                 if(selected_idx >= 0)
                 {
                     if(is_dir)
-                       show_error |= !(onDirClick(selected_idx, show_drives, false));
+                       show_error |= !(onDirClick(selected_idx, show_drives, filtered_dirs));
                     else
                         selected_fn = current_path + subfiles[selected_idx].name;
                 }
@@ -253,66 +207,25 @@ namespace imgui_addons
             //Render top file bar for easy navigation
             show_error |= renderFileBar();
 
+            filtered_dirs.clear();
+            for (size_t i = 0; i < subdirs.size(); ++i)
+            {
+                filtered_dirs.push_back(&subdirs[i]);
+            }
+            filtered_files.clear();
+            for (size_t i = 0; i < subfiles.size(); ++i)
+            {
+                filtered_files.push_back(&subfiles[i]);
+            }
+
             ImGui::Separator();
 
-            //Reinitialize the limit on number of selectables in one column based on height
-            col_items_limit = (sz_xy.y - 119) / 17;
-            int num_cols = std::max(1.0f, std::ceil((subdirs.size() + subfiles.size()) / (float) col_items_limit));
-            float content_width = std::max(sz_xy.x - ImGui::GetStyle().WindowPadding.x * 2, num_cols * col_width);
-
-            ImGui::SetNextWindowContentSize(ImVec2(content_width, 0.0f));
-            ImGui::BeginChild("##ScrollingRegion", ImVec2(0, -70), true, ImGuiWindowFlags_HorizontalScrollbar);
-            ImGui::Columns(num_cols);
-
-            //Output directories in yellow
             bool show_drives = false;
             #ifdef OSWIN
             (current_dirlist.back() == "Computer") ? show_drives = true : show_drives = false;
             #endif // OSWIN
 
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
-            int items = 0;
-            for (int i = 0; i < subdirs.size(); i++)
-            {
-                if(!subdirs[i].is_hidden || show_hidden)
-                {
-                    items++;
-                    if(ImGui::Selectable(subdirs[i].name.c_str(), selected_idx == i && is_dir, ImGuiSelectableFlags_AllowDoubleClick))
-                    {
-                        selected_idx = i;
-                        is_dir = true;
-                        if(ImGui::IsMouseDoubleClicked(0))
-                            show_error |= !(onDirClick(i, show_drives, true));
-                    }
-                    if( (items) % col_items_limit == 0)
-                        ImGui::NextColumn();
-                }
-            }
-            ImGui::PopStyleColor(1);
-
-            //Output files
-            for (int i = 0; i < subfiles.size(); i++)
-            {
-                if(!subfiles[i].is_hidden || show_hidden)
-                {
-                    items++;
-                    if(ImGui::Selectable(subfiles[i].name.c_str(), selected_idx == i && !is_dir))
-                    {
-                        int len = subfiles[i].name.length();
-                        selected_idx = i;
-                        is_dir = false;
-                        if(len < 500)
-                        {
-                            subfiles[i].name.copy(save_fn, len, 0);
-                            save_fn[len] = '\0';
-                        }
-                    }
-                    if( (items) % col_items_limit == 0)
-                        ImGui::NextColumn();
-                }
-            }
-            ImGui::Columns(1);
-            ImGui::EndChild();
+            show_error |= renderFileList(sz_xy, filtered_dirs, filtered_files, show_drives);
 
             //Draw Remaining UI elements
             ImGui::SetCursorPosY(ImGui::GetCursorPosY() + 2);
@@ -359,7 +272,7 @@ namespace imgui_addons
             if(selected_idx != -1 && is_dir && ImGui::GetFocusID() != ImGui::GetID("##SaveFileNameInput"))
             {
                 if (ImGui::Button("Open", ImVec2(50, 0)))
-                    show_error |= !(onDirClick(selected_idx, show_drives, true));
+                    show_error |= !(onDirClick(selected_idx, show_drives, filtered_files));
             }
             else
             {
@@ -432,6 +345,72 @@ namespace imgui_addons
         return show_error;
     }
 
+
+    bool ImGuiFileBrowser::renderFileList(const ImVec2& sz_xy, const std::vector<const Info*>& directories, const std::vector<const Info*>& files, bool show_drives)
+    {
+        bool show_error = false;
+
+        //Reinitialize the limit on number of selectables in one column based on height
+        col_items_limit = static_cast<int>(sz_xy.y - 119) / 17;
+        int num_cols = std::max(1.0f, std::ceil(static_cast<float>(directories.size() + files.size()) / (float) col_items_limit));
+        float content_width = std::max(sz_xy.x - ImGui::GetStyle().WindowPadding.x * 2, num_cols * col_width);
+
+        ImGui::SetNextWindowContentSize(ImVec2(content_width, 0.0f));
+        ImGui::BeginChild("##ScrollingRegion", ImVec2(0, -70), true, ImGuiWindowFlags_HorizontalScrollbar);
+        ImGui::Columns(num_cols);
+
+        //Output directories in yellow
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
+        int items = 0;
+        for (int i = 0; i < directories.size(); i++)
+        {
+            if(!directories[i]->is_hidden || show_hidden)
+            {
+                items++;
+                if(ImGui::Selectable(directories[i]->name.c_str(), selected_idx == i && is_dir, ImGuiSelectableFlags_AllowDoubleClick))
+                {
+                    selected_idx = i;
+                    is_dir = true;
+                    if(ImGui::IsMouseDoubleClicked(0))
+                        show_error |= !(onDirClick(i, show_drives, directories));
+                }
+                if( (items) % col_items_limit == 0)
+                    ImGui::NextColumn();
+            }
+        }
+        ImGui::PopStyleColor(1);
+
+        //Output files
+        for (int i = 0; i < files.size(); i++)
+        {
+            if(!files[i]->is_hidden || show_hidden)
+            {
+                items++;
+                if(ImGui::Selectable(files[i]->name.c_str(), selected_idx == i && !is_dir, ImGuiSelectableFlags_AllowDoubleClick))
+                {
+                    int len = files[i]->name.length();
+                    selected_idx = i;
+                    is_dir = false;
+                    if(ImGui::IsMouseDoubleClicked(0))
+                    {
+                        if(len < 500)
+                        {
+                            files[i]->name.copy(save_fn, len, 0);
+                            save_fn[len] = '\0';
+                        }
+                        selected_fn = current_path + files[i]->name;
+                    }
+                }
+                if( (items) % col_items_limit == 0)
+                    ImGui::NextColumn();
+            }
+        }
+        ImGui::Columns(1);
+        ImGui::EndChild();
+
+        return show_error;
+    }
+
     bool ImGuiFileBrowser::onNavigationButtonClick(int idx)
     {
         std::string new_path(current_path);
@@ -474,42 +453,35 @@ namespace imgui_addons
             return false;
     }
 
-    bool ImGuiFileBrowser::onDirClick(int idx, bool show_drives, bool is_save_dialog)
+    bool ImGuiFileBrowser::onDirClick(int idx, bool show_drives, const std::vector<const Info*>& directories)
     {
         std::string name;
         std::string new_path(current_path);
 
-        if(is_save_dialog)
-            name = subdirs[idx].name;
-        else
-            name = filtered_dirs[idx]->name;
+        name = directories[idx]->name;
 
         if(name == "..")
         {
-            new_path.pop_back(); //Remove trailing "/"
-            new_path = new_path.substr(0, new_path.find_last_of("/")+1); //Also include a trailing "/"
+            new_path.pop_back(); // Remove trailing '/'
+            new_path = new_path.substr(0, new_path.find_last_of('/') + 1); // Also include a trailing '/'
         }
         else
         {
-            #ifdef OSWIN
             if(show_drives)
             {
+                #ifdef OSWIN
                 //Remember we displayed drives as *Local/Removable Disk: X* hence we need last char only
                 name = std::string(1, name.back()) + ":";
-                new_path += name + "/";
+                #endif // OSWIN
             }
-            else
-                new_path += name + "/";
-            #else
             new_path += name + "/";
-            #endif // OSWIN
         }
 
         if(readDIR(new_path))
         {
             if(name == "..")
                 current_dirlist.pop_back();
-             else
+            else
                 current_dirlist.push_back(name);
 
              current_path = new_path;
