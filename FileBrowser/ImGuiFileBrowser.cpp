@@ -11,6 +11,9 @@
 
 #if defined (WIN32) || defined (_WIN32) || defined (__WIN32)
 #define OSWIN
+#ifndef NOMINMAX
+    #define NOMINMAX
+#endif
 #include "Dirent/dirent.h"
 #include <windows.h>
 #else
