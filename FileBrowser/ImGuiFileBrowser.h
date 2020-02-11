@@ -39,6 +39,7 @@ namespace imgui_addons
             static bool alphaSortComparator(const Info& a, const Info& b);
             bool renderFileBar();
             bool renderFileList(const ImVec2& sz_xy, const std::vector<const Info*>& directories, const std::vector<const Info*>& files, bool show_drives);
+            void renderItemFilter(const ImVec2& sz_xy);
             bool validateFile();
             bool readDIR(std::string path);
             bool onNavigationButtonClick(int idx);

@@ -85,39 +85,12 @@ namespace imgui_addons
             if(subdirs.empty() && subfiles.empty())
                 show_error |= !(readDIR(current_path));
 
-            float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
-
             // Render top file bar for easy navigation
             show_error |= renderFileBar();
 
             ImGui::Separator();
-            ImVec2 cursor_pos = ImGui::GetCursorPos();
-            ImGui::SetCursorPosY(sz_xy.y - frame_height_spacing * 1.5f);
 
-            //Filter items if filter text changed or the contents change due to reading new directory, hidden checkbox etc,
-            if(filter.Draw("Filter (inc, -exc)", sz_xy.x - 145) || filter_dirty )
-            {
-                filter_dirty = false;
-                filtered_dirs.clear();
-                filtered_files.clear();
-                for(int i = 0; i < subdirs.size(); i++)
-                {
-                    if(filter.PassFilter(subdirs[i].name.c_str()))
-                        filtered_dirs.push_back(&subdirs[i]);
-                }
-
-                for(int i = 0; i < subfiles.size(); i++)
-                {
-                    if(filter.PassFilter(subfiles[i].name.c_str()))
-                        filtered_files.push_back(&subfiles[i]);
-                }
-            }
-
-            //If filter bar was focused clear selection
-            if(ImGui::GetFocusID() == ImGui::GetID("Filter (inc, -exc)"))
-                selected_idx = -1;
-
-            ImGui::SetCursorPos(cursor_pos);
+            renderItemFilter(sz_xy);
 
             //Output directories in yellow
             bool show_drives = false;
@@ -128,6 +101,7 @@ namespace imgui_addons
             show_error |= renderFileList(sz_xy, filtered_dirs, filtered_files, show_drives);
 
             //Draw Remaining UI elements
+            float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
             ImGui::SetCursorPosY(ImGui::GetWindowSize().y - frame_height_spacing - ImGui::GetStyle().WindowPadding.y);
             ImGui::Checkbox("Show Hidden Files and Folders", &show_hidden);
             ImGui::SameLine();
@@ -202,8 +176,6 @@ namespace imgui_addons
             if(subdirs.empty() && subfiles.empty())
                 show_error |= !(readDIR(current_path));
 
-            float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
-
             //Render top file bar for easy navigation
             show_error |= renderFileBar();
 
@@ -264,6 +236,7 @@ namespace imgui_addons
             ext = valid_exts[selected_ext_idx];
             ImGui::PopItemWidth();
 
+            float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
             ImGui::SetCursorPosY(ImGui::GetWindowSize().y - frame_height_spacing - ImGui::GetStyle().WindowPadding.y);
             ImGui::Checkbox("Show Hidden Files and Folders", &show_hidden);
             ImGui::SameLine();
@@ -409,6 +382,39 @@ namespace imgui_addons
         ImGui::EndChild();
 
         return show_error;
+    }
+
+    void ImGuiFileBrowser::renderItemFilter(const ImVec2& sz_xy)
+    {
+        float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
+
+        ImVec2 cursor_pos = ImGui::GetCursorPos();
+        ImGui::SetCursorPosY(sz_xy.y - frame_height_spacing * 1.5f);
+
+        //Filter items if filter text changed or the contents change due to reading new directory, hidden checkbox etc,
+        if(filter.Draw("Filter (inc, -exc)", sz_xy.x - 145) || filter_dirty )
+        {
+            filter_dirty = false;
+            filtered_dirs.clear();
+            filtered_files.clear();
+            for (size_t i = 0; i < subdirs.size(); ++i)
+            {
+                if(filter.PassFilter(subdirs[i].name.c_str()))
+                    filtered_dirs.push_back(&subdirs[i]);
+            }
+
+            for (size_t i = 0; i < subfiles.size(); ++i)
+            {
+                if(filter.PassFilter(subfiles[i].name.c_str()))
+                    filtered_files.push_back(&subfiles[i]);
+            }
+        }
+
+        //If filter bar was focused clear selection
+        if(ImGui::GetFocusID() == ImGui::GetID("Filter (inc, -exc)"))
+            selected_idx = -1;
+
+        ImGui::SetCursorPos(cursor_pos);
     }
 
     bool ImGuiFileBrowser::onNavigationButtonClick(int idx)
