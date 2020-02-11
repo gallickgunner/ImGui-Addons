@@ -37,6 +37,7 @@ namespace imgui_addons
 
             static std::string wStringToString(const wchar_t* wchar_arr);
             static bool alphaSortComparator(const Info& a, const Info& b);
+            bool renderFileBar();
             bool validateFile();
             bool readDIR(std::string path);
             bool onNavigationButtonClick(int idx);

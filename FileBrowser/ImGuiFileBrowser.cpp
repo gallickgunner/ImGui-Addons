@@ -86,34 +86,10 @@ namespace imgui_addons
             if(subdirs.empty() && subfiles.empty())
                 show_error |= !(readDIR(current_path));
 
-            float frame_height = ImGui::GetFrameHeight();
             float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
 
-            //Render top file bar for easy navigation
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
-            for(int i = 0; i < current_dirlist.size(); i++)
-            {
-                if( ImGui::Button(current_dirlist[i].c_str()) )
-                {
-                    //If last button clicked, nothing happens
-                    if(i == current_dirlist.size() - 1)
-                        break;
-                    show_error |= !(onNavigationButtonClick(i));
-                }
-
-                //Draw Arrow Buttons
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 1.0f, 0.01f));
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f,1.0f));
-                if(i != current_dirlist.size() - 1)
-                {
-                    ImGui::SameLine(0,0);
-                    ImGui::ArrowButtonEx("##Right", ImGuiDir_Right, ImVec2(frame_height,frame_height), ImGuiButtonFlags_Disabled);
-                    ImGui::SameLine(0,0);
-                }
-                ImGui::PopStyleColor();
-                ImGui::PopStyleColor();
-            }
-            ImGui::PopStyleColor();
+            // Render top file bar for easy navigation
+            show_error |= renderFileBar();
 
             ImGui::Separator();
             ImVec2 cursor_pos = ImGui::GetCursorPos();
@@ -272,34 +248,10 @@ namespace imgui_addons
             if(subdirs.empty() && subfiles.empty())
                 show_error |= !(readDIR(current_path));
 
-            float frame_height = ImGui::GetFrameHeight();
             float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
 
             //Render top file bar for easy navigation
-            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
-            for(int i = 0; i < current_dirlist.size(); i++)
-            {
-                if( ImGui::Button(current_dirlist[i].c_str()) )
-                {
-                    //If last button clicked, nothing happens
-                    if(i == current_dirlist.size() - 1)
-                        break;
-                    show_error |= !(onNavigationButtonClick(i));
-                }
-
-                //Draw Arrow Buttons
-                ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 1.0f, 0.01f));
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f,1.0f));
-                if(i != current_dirlist.size() - 1)
-                {
-                    ImGui::SameLine(0,0);
-                    ImGui::ArrowButtonEx("##Right", ImGuiDir_Right, ImVec2(frame_height,frame_height), ImGuiButtonFlags_Disabled);
-                    ImGui::SameLine(0,0);
-                }
-                ImGui::PopStyleColor();
-                ImGui::PopStyleColor();
-            }
-            ImGui::PopStyleColor();
+            show_error |= renderFileBar();
 
             ImGui::Separator();
 
@@ -445,6 +397,39 @@ namespace imgui_addons
         }
         else
             return false;
+    }
+
+    bool ImGuiFileBrowser::renderFileBar()
+    {
+        bool show_error = false;
+        float frame_height = ImGui::GetFrameHeight();
+
+        ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
+        for(int i = 0; i < current_dirlist.size(); i++)
+        {
+            if( ImGui::Button(current_dirlist[i].c_str()) )
+            {
+                //If last button clicked, nothing happens
+                if(i == current_dirlist.size() - 1)
+                    break;
+                show_error |= !(onNavigationButtonClick(i));
+            }
+
+            //Draw Arrow Buttons
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 1.0f, 0.01f));
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f,1.0f));
+            if(i != current_dirlist.size() - 1)
+            {
+                ImGui::SameLine(0,0);
+                ImGui::ArrowButtonEx("##Right", ImGuiDir_Right, ImVec2(frame_height, frame_height), ImGuiButtonFlags_Disabled);
+                ImGui::SameLine(0,0);
+            }
+            ImGui::PopStyleColor();
+            ImGui::PopStyleColor();
+        }
+        ImGui::PopStyleColor();
+
+        return show_error;
     }
 
     bool ImGuiFileBrowser::onNavigationButtonClick(int idx)
