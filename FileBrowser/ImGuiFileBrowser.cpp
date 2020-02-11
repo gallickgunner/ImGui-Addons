@@ -653,9 +653,9 @@ namespace imgui_addons
 
     bool ImGuiFileBrowser::validateFile()
     {
-        int idx = selected_fn.find_last_of(".");
-        std::string ext = selected_fn.substr(idx, selected_fn.length() - idx);
-        return (std::find(valid_exts.begin(), valid_exts.end(), ext) != valid_exts.end());
+        int idx = selected_fn.find_last_of('.');
+        std::string file_ext = idx == std::string::npos ? "" : selected_fn.substr(idx, selected_fn.length() - idx);
+        return (std::find(valid_exts.begin(), valid_exts.end(), file_ext) != valid_exts.end());
     }
 
     void ImGuiFileBrowser::parsePathTabs(std::string path)
