@@ -34,8 +34,29 @@ namespace imgui_addons
         #ifdef OSWIN
         current_path = "./";
         #else
-        current_path = "/";
-        current_dirlist.push_back("/");
+        char* real_path = realpath("./", nullptr);
+        if (real_path == nullptr)
+        {
+            current_path = "/";
+            current_dirlist.push_back("/");
+        }
+        else
+        {
+            current_path = real_path;
+            current_path += "/";
+            if (real_path[0] == '/')
+            {
+                current_dirlist.push_back("/");
+                real_path++;
+            }
+            for (char* slash = strchr(real_path, '/');
+                 slash != nullptr;
+                 real_path = slash + 1, slash = strchr(real_path, '/'))
+            {
+                current_dirlist.push_back(std::string(real_path, slash));
+            }
+            current_dirlist.push_back(real_path);
+        }
         #endif
     }
 
@@ -729,7 +750,7 @@ namespace imgui_addons
         char* char_arr = new char[len];
         std::wcsrtombs(char_arr, &wchar_arr, len, &state);
 
-        auto ret_val = std::string(char_arr);
+        std::string ret_val(char_arr);
 
         delete[] char_arr;
         return ret_val;
