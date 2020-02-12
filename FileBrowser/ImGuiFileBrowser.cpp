@@ -338,7 +338,11 @@ namespace imgui_addons
                 if(selected_idx >= 0 && is_dir)
                     selected_fn = current_path + filtered_dirs[selected_idx]->name;
                 else
+                {
+                    // Selecting the current directory
                     selected_fn = current_path;
+                    is_dir = true;
+                }
             }
             ImGui::SameLine();
             if (ImGui::Button("Cancel", ImVec2(50, 0)))
