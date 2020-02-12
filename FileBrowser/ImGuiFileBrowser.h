@@ -16,12 +16,17 @@ namespace imgui_addons
             /* Use this to show an open file dialog. The function takes label for the window,
              * the size and optionally the extensions that are valid for opening.
              */
-            bool showOpenFileDialog(std::string label, ImVec2 sz_xy, std::string valid_types = "");
+            bool showOpenFileDialog(const std::string& label, const ImVec2& sz_xy, const std::string& valid_types = "");
 
             /* Use this to open a save file dialog. The function takes label for the window,
              * the size and the extensions or types of files allowed for saving
              */
-            bool showSaveFileDialog(std::string label, ImVec2 sz_xy, std::string save_types);
+            bool showSaveFileDialog(const std::string& label, const ImVec2& sz_xy, const std::string& valid_types);
+
+            /* Use this to open a select directory dialog. The function takes label for the
+             * window, and the size.
+             */
+            bool showSelectDirectoryDialog(const std::string& label, const ImVec2& sz_xy);
             std::string selected_fn;    // Store the opened/saved file name. Should only be accessed when above functions return true else may contain garbage.
             std::string ext;    // Store the saved file extension
 
@@ -37,10 +42,14 @@ namespace imgui_addons
 
             static std::string wStringToString(const wchar_t* wchar_arr);
             static bool alphaSortComparator(const Info& a, const Info& b);
+            void setValidExtTypes(const std::string& valid_types_string);
+            bool renderFileBar();
+            bool renderFileList(const ImVec2& sz_xy, const std::vector<const Info*>& directories, const std::vector<const Info*>& files, bool show_drives);
+            void renderItemFilter(const ImVec2& sz_xy);
             bool validateFile();
             bool readDIR(std::string path);
             bool onNavigationButtonClick(int idx);
-            bool onDirClick(int idx, bool show_drives, bool is_save_dialog);
+            bool onDirClick(int idx, bool show_drives, const std::vector<const Info*>& directories);
             #if defined (WIN32) || defined (_WIN32) || defined (__WIN32)
             bool loadWindowsDrives(); // Windows Exclusive
             #endif
@@ -62,8 +71,8 @@ namespace imgui_addons
             /* These variables are used specifically when user calls openFileDialog. They are of no use for opening save file dialog */
             ImGuiTextFilter filter;
             std::string valid_types;
-            std::vector<Info*> filtered_dirs; // Note: We don't need to call delete. It's just for storing filtered items from subdirs and subfiles so we don't use PassFilter every frame.
-            std::vector<Info*> filtered_files;
+            std::vector<const Info*> filtered_dirs; // Note: We don't need to call delete. It's just for storing filtered items from subdirs and subfiles so we don't use PassFilter every frame.
+            std::vector<const Info*> filtered_files;
 
             //These vars are used specifically for save file dialog.
             char save_fn[500];

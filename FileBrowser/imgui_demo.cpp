@@ -194,6 +194,7 @@ static void ShowDemoWindowColumns();
 static void ShowDemoWindowMisc();
 static bool show_open_dialog = false;
 static bool show_save_dialog = false;
+static bool show_select_directory_dialog = false;
 
 // Demonstrate most Dear ImGui features (this is big function!)
 // You may execute this function to experiment with the UI and understand what it does. You may then search for keywords in the code when you are interested by a specific feature.
@@ -322,11 +323,19 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::OpenPopup("Save File");
             show_save_dialog = false;
         }
+        if(show_select_directory_dialog)
+        {
+            ImGui::OpenPopup("Select Directory");
+            show_select_directory_dialog = false;
+        }
         //Show an open file dialog. 3rd argument provides a list of supported files. Selecting other files will show error
         if(file_dialog.showOpenFileDialog("Open File", ImVec2(600, 300), ".rar,.zip,.7z,.tar"))
             printf("%s\n", file_dialog.selected_fn.c_str());
 
         if(file_dialog.showSaveFileDialog("Save File", ImVec2(600, 300), ".png,.jpg,.bmp"))
+            printf("%s\n", file_dialog.selected_fn.c_str());
+
+        if(file_dialog.showSelectDirectoryDialog("Select Directory", ImVec2(600, 300)))
             printf("%s\n", file_dialog.selected_fn.c_str());
         ImGui::EndMenuBar();
     }
@@ -3556,6 +3565,7 @@ static void ShowExampleMenuFile()
         }
         ImGui::EndMenu();
     }
+    if (ImGui::MenuItem("Select Directory")) { show_select_directory_dialog = true; }
     if (ImGui::MenuItem("Save", "Ctrl+S")) {}
     if (ImGui::MenuItem("Save As..")) { show_save_dialog = true; }
     ImGui::Separator();
