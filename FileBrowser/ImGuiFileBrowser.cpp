@@ -424,7 +424,7 @@ namespace imgui_addons
         ImGui::SetCursorPosY(pw_content_sz.y - frame_height_spacing * 2.0f);
 
         //Render Input Text Bar label
-        ImGui::Text(label.c_str());
+        ImGui::Text("%s", label.c_str());
         ImGui::SameLine();
 
         //Render Input Text Bar
