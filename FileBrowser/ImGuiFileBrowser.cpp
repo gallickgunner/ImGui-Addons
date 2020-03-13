@@ -255,7 +255,7 @@ namespace imgui_addons
                         ImGui::OpenPopup("##NavBarDropboxPopup");
                     if(ImGui::BeginPopup("##NavBarDropboxPopup"))
                     {
-                        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+                        ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.125f, 0.125f, 0.125f, 1.0f));
                         if(ImGui::ListBoxHeader("##NavBarDropBox", ImVec2(0, list_item_height* 5)))
                         {
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
@@ -325,6 +325,15 @@ namespace imgui_addons
         //Reinitialize the limit on number of selectables in one column based on height
         col_items_limit = std::max(1.0f, window_content_height/list_item_height);
         int num_cols = std::max(1.0f, std::ceil(static_cast<float>(filtered_dirs.size() + filtered_files.size()) / col_items_limit));
+        
+        //Limitation by ImGUI in 1.75. If columns are greater than 64 readjust the limit on items per column and recalculate number of columns
+        if(num_cols > 64)
+        {
+            int exceed_items_amount = (num_cols - 64) * col_items_limit;
+            col_items_limit += std::ceil(exceed_items_amount/64.0);
+            num_cols = std::max(1.0f, std::ceil(static_cast<float>(filtered_dirs.size() + filtered_files.size()) / col_items_limit));
+        }
+        
         float content_width = num_cols * col_width;
         if(content_width < min_content_size)
             content_width = 0;
@@ -436,11 +445,11 @@ namespace imgui_addons
         if(ImGui::IsItemEdited())
             selected_idx = -1;
 
-        // If Input Bar is edited and dialog_mode is OPEN/SELECT show a list of files or dirs matching the input text.
-        if((ImGui::IsItemEdited()) && dialog_mode != DialogMode::SAVE)
+        // If Input Bar is edited show a list of files or dirs matching the input text.
+        if(ImGui::IsItemEdited() || ImGui::IsItemActivated())
         {
-            //If dialog_mode == OPEN then filter from list of files..
-            if(dialog_mode == DialogMode::OPEN)
+            //If dialog_mode is OPEN/SAVE then filter from list of files..
+            if(dialog_mode == DialogMode::OPEN || dialog_mode == DialogMode::SAVE)
             {
                 inputcb_filter_files.clear();
                 for(int i = 0; i < subfiles.size(); i++)
@@ -569,26 +578,37 @@ namespace imgui_addons
     bool ImGuiFileBrowser::renderInputComboBox()
     {
         bool show_error = false;
-        if(show_inputbar_combobox && (ImGui::GetFocusID() == ImGui::GetID("##InputBarComboBoxScope") || ImGui::GetFocusID() == ImGui::GetID("##FileNameInput")))
+        ImGuiStyle& style = ImGui::GetStyle();
+        ImGuiID input_id =  ImGui::GetID("##FileNameInput");
+        ImGuiID focus_scope_id = ImGui::GetID("##InputBarComboBoxListScope");
+        float frame_height = ImGui::GetFrameHeight();
+
+        input_combobox_sz.y = std::min((inputcb_filter_files.size() + 1) * frame_height + style.WindowPadding.y *  2.0f, 
+                                        8 * ImGui::GetFrameHeight() + style.WindowPadding.y *  2.0f);
+        
+        if(show_inputbar_combobox && ( ImGui::GetFocusScopeID() == focus_scope_id || ImGui::GetCurrentContext()->ActiveIdIsAlive == input_id  ))
         {
-            ImGui::PushFocusScope(ImGui::GetID("##InputBarComboBoxScope"));
             ImGuiWindowFlags popupFlags = ImGuiWindowFlags_NoTitleBar           |
                                           ImGuiWindowFlags_NoResize             |
                                           ImGuiWindowFlags_NoMove               |
                                           ImGuiWindowFlags_NoFocusOnAppearing   |
+                                          ImGuiWindowFlags_NoScrollbar          |
                                           ImGuiWindowFlags_NoSavedSettings;
 
-            ImGui::PushClipRect(ImVec2(0,0), ImGui::GetIO().DisplaySize, false);
+
             ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.125f, 0.125f, 0.125f, 1.0f));           
             ImGui::SetNextWindowBgAlpha(1.0);
             ImGui::SetNextWindowPos(input_combobox_pos + ImVec2(0, ImGui::GetFrameHeightWithSpacing()));
-            ImGui::SetNextWindowSize(input_combobox_sz);
-            ImGui::BeginChild("##InputBarComboBox", input_combobox_sz + ImVec2(0, 150), true, popupFlags);
+            ImGui::PushClipRect(ImVec2(0,0), ImGui::GetIO().DisplaySize, false);
+            
+            ImGui::BeginChild("##InputBarComboBox", input_combobox_sz, true, popupFlags);
 
-            if(ImGui::ListBoxHeader("##InputBarComboBoxList", ImVec2(input_combobox_sz.x, 150)))
+            ImVec2 listbox_size = input_combobox_sz - ImGui::GetStyle().WindowPadding * 2.0f;
+            if(ImGui::ListBoxHeader("##InputBarComboBoxList", listbox_size))
             {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f,1.0f));
+                ImGui::PushFocusScope(focus_scope_id);
                 for(auto& element : inputcb_filter_files)
                 {
                     if(ImGui::Selectable(element.get().c_str(), false, ImGuiSelectableFlags_NoHoldingActiveID | ImGuiSelectableFlags_PressedOnClick))
@@ -606,13 +626,13 @@ namespace imgui_addons
                         }
                     }
                 }
+                ImGui::PopFocusScope();
                 ImGui::PopStyleColor(1);
                 ImGui::ListBoxFooter();
             }
             ImGui::EndChild();
             ImGui::PopStyleColor(2);
             ImGui::PopClipRect();
-            ImGui::PopFocusScope();
         }
         return show_error;
     }
@@ -1050,7 +1070,7 @@ namespace imgui_addons
         #ifdef OSWIN
         current_dirlist.push_back("Computer");
         #else
-        if(path[0] == "/")
+        if(path[0] == '/')
             current_dirlist.push_back("/");
         #endif //OSWIN
 
@@ -1140,7 +1160,7 @@ namespace imgui_addons
 
         //If PATH_MAX is defined deal with memory using new/delete. Else fallback to malloc'ed memory from `realpath()`
         if(path_max_def)
-            buffer = new char[PATH_MAX]
+            buffer = new char[PATH_MAX];
 
         char* real_path = realpath("./", buffer);
         if (real_path == nullptr)
@@ -1156,7 +1176,7 @@ namespace imgui_addons
         }
 
         if(path_max_def)
-            delete[] abs_path;
+            delete[] buffer;
         else
             free(real_path);
     }

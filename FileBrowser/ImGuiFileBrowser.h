@@ -94,7 +94,7 @@ namespace imgui_addons
             #endif
 
             #if defined(unix) || defined(__unix__) || defined(__unix) || defined(__APPLE__)
-            void initCurrentPath()    // Helper function for UNIX based system to load Absolute path using realpath
+            void initCurrentPath();   // Helper function for UNIX based system to load Absolute path using realpath
             #endif
 
             ImVec2 min_size, max_size, input_combobox_pos, input_combobox_sz;
