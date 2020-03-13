@@ -194,7 +194,7 @@ static void ShowDemoWindowColumns();
 static void ShowDemoWindowMisc();
 static bool show_open_dialog = false;
 static bool show_save_dialog = false;
-static bool show_select_directory_dialog = false;
+static bool show_select_dialog = false;
 
 // Demonstrate most Dear ImGui features (this is big function!)
 // You may execute this function to experiment with the UI and understand what it does. You may then search for keywords in the code when you are interested by a specific feature.
@@ -323,20 +323,31 @@ void ImGui::ShowDemoWindow(bool* p_open)
             ImGui::OpenPopup("Save File");
             show_save_dialog = false;
         }
-        if(show_select_directory_dialog)
+        else if (show_select_dialog)
         {
-            ImGui::OpenPopup("Select Directory");
-            show_select_directory_dialog = false;
+            ImGui::OpenPopup("Select Directory##popup");
+            show_select_dialog = false;
         }
-        //Show an open file dialog. 3rd argument provides a list of supported files. Selecting other files will show error
-        if(file_dialog.showOpenFileDialog("Open File", ImVec2(600, 300), ".rar,.zip,.7z,.tar"))
-            printf("%s\n", file_dialog.selected_fn.c_str());
 
-        if(file_dialog.showSaveFileDialog("Save File", ImVec2(600, 300), ".png,.jpg,.bmp"))
+        //Show an open/save/select file dialog. Last argument provides a list of supported files. Selecting other files will show error. If "*.*" is provided, all files can be opened.
+        if(file_dialog.showFileDialog("Open File", imgui_addons::ImGuiFileBrowser::DialogMode::OPEN, ImVec2(600, 300), ".h,.cpp,.c"))
+        {
             printf("%s\n", file_dialog.selected_fn.c_str());
+            printf("%s\n", file_dialog.selected_path.c_str());
+        }
 
-        if(file_dialog.showSelectDirectoryDialog("Select Directory", ImVec2(600, 300)))
+        if(file_dialog.showFileDialog("Select Directory##popup", imgui_addons::ImGuiFileBrowser::DialogMode::SELECT, ImVec2(600, 300)))
+        {
             printf("%s\n", file_dialog.selected_fn.c_str());
+            printf("%s\n", file_dialog.selected_path.c_str());
+        }
+
+        if(file_dialog.showFileDialog("Save File", imgui_addons::ImGuiFileBrowser::DialogMode::SAVE, ImVec2(600, 300), ".png,.jpg,.bmp"))
+        {
+            printf("%s\n", file_dialog.selected_fn.c_str());
+            printf("%s\n", file_dialog.ext.c_str());
+            printf("%s\n", file_dialog.selected_path.c_str());
+        }
         ImGui::EndMenuBar();
     }
 
@@ -3547,6 +3558,7 @@ static void ShowExampleMenuFile()
     ImGui::MenuItem("(dummy menu)", NULL, false, false);
     if (ImGui::MenuItem("New")) {}
     if (ImGui::MenuItem("Open", "Ctrl+O")) { show_open_dialog = true; }
+    if (ImGui::MenuItem("Select Directory")) { show_select_dialog = true; }
     if (ImGui::BeginMenu("Open Recent"))
     {
         ImGui::MenuItem("fish_hat.c");
@@ -3565,7 +3577,6 @@ static void ShowExampleMenuFile()
         }
         ImGui::EndMenu();
     }
-    if (ImGui::MenuItem("Select Directory")) { show_select_directory_dialog = true; }
     if (ImGui::MenuItem("Save", "Ctrl+S")) {}
     if (ImGui::MenuItem("Save As..")) { show_save_dialog = true; }
     ImGui::Separator();
