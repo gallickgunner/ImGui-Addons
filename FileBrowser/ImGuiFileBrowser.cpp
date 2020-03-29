@@ -325,7 +325,7 @@ namespace imgui_addons
         //Reinitialize the limit on number of selectables in one column based on height
         col_items_limit = std::max(1.0f, window_content_height/list_item_height);
         int num_cols = std::max(1.0f, std::ceil(static_cast<float>(filtered_dirs.size() + filtered_files.size()) / col_items_limit));
-        
+
         //Limitation by ImGUI in 1.75. If columns are greater than 64 readjust the limit on items per column and recalculate number of columns
         if(num_cols > 64)
         {
@@ -333,7 +333,7 @@ namespace imgui_addons
             col_items_limit += std::ceil(exceed_items_amount/64.0);
             num_cols = std::max(1.0f, std::ceil(static_cast<float>(filtered_dirs.size() + filtered_files.size()) / col_items_limit));
         }
-        
+
         float content_width = num_cols * col_width;
         if(content_width < min_content_size)
             content_width = 0;
@@ -583,9 +583,9 @@ namespace imgui_addons
         ImGuiID focus_scope_id = ImGui::GetID("##InputBarComboBoxListScope");
         float frame_height = ImGui::GetFrameHeight();
 
-        input_combobox_sz.y = std::min((inputcb_filter_files.size() + 1) * frame_height + style.WindowPadding.y *  2.0f, 
+        input_combobox_sz.y = std::min((inputcb_filter_files.size() + 1) * frame_height + style.WindowPadding.y *  2.0f,
                                         8 * ImGui::GetFrameHeight() + style.WindowPadding.y *  2.0f);
-        
+
         if(show_inputbar_combobox && ( ImGui::GetFocusScopeID() == focus_scope_id || ImGui::GetCurrentContext()->ActiveIdIsAlive == input_id  ))
         {
             ImGuiWindowFlags popupFlags = ImGuiWindowFlags_NoTitleBar           |
@@ -597,11 +597,11 @@ namespace imgui_addons
 
 
             ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.1f, 0.1f, 0.1f, 1.0f));
-            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.125f, 0.125f, 0.125f, 1.0f));           
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.125f, 0.125f, 0.125f, 1.0f));
             ImGui::SetNextWindowBgAlpha(1.0);
             ImGui::SetNextWindowPos(input_combobox_pos + ImVec2(0, ImGui::GetFrameHeightWithSpacing()));
             ImGui::PushClipRect(ImVec2(0,0), ImGui::GetIO().DisplaySize, false);
-            
+
             ImGui::BeginChild("##InputBarComboBox", input_combobox_sz, true, popupFlags);
 
             ImVec2 listbox_size = input_combobox_sz - ImGui::GetStyle().WindowPadding * 2.0f;
@@ -657,8 +657,7 @@ namespace imgui_addons
                             input_fn[idx++] = valid_exts[selected_ext_idx][j];
                         input_fn[idx++] = '\0';
                     }
-                    else
-                        filterFiles(FilterMode_Files);
+                    filterFiles(FilterMode_Files);
                 }
             }
             ImGui::EndCombo();
