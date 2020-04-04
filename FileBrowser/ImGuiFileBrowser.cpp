@@ -155,8 +155,9 @@ namespace imgui_addons
 
             show_error |= renderNavAndSearchBarRegion();
             show_error |= renderFileListRegion();
-            show_error |= renderButtonsAndCheckboxRegion();
             show_error |= renderInputTextAndExtRegion();
+            show_error |= renderButtonsAndCheckboxRegion();
+            
 
             if(validate_file)
             {
@@ -1110,7 +1111,7 @@ namespace imgui_addons
             cb = std::tolower(std::toupper(cb));
         }
         while (ca == cb && ca != '\0');
-        if(ca - cb <= 0)
+        if(ca  < cb)
             return true;
         else
             return false;
