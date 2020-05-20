@@ -48,6 +48,7 @@ namespace imgui_addons
         repfile_modal_id = "Replace File?";
         selected_fn = "";
         selected_path = "";
+        input_fn[0] = '\0';
 
         #ifdef OSWIN
         current_path = "./";
