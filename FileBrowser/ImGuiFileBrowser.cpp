@@ -158,7 +158,6 @@ namespace imgui_addons
             show_error |= renderFileListRegion();
             show_error |= renderInputTextAndExtRegion();
             show_error |= renderButtonsAndCheckboxRegion();
-            
 
             if(validate_file)
             {
@@ -613,7 +612,7 @@ namespace imgui_addons
                 ImGui::PushFocusScope(focus_scope_id);
                 for(auto& element : inputcb_filter_files)
                 {
-                    if(ImGui::Selectable(element.get().c_str(), false, ImGuiSelectableFlags_NoHoldingActiveID | ImGuiSelectableFlags_PressedOnClick))
+                    if(ImGui::Selectable(element.get().c_str(), false, ImGuiSelectableFlags_NoHoldingActiveID | ImGuiSelectableFlags_SelectOnClick))
                     {
                         if(element.get().size() > 256)
                         {
@@ -670,7 +669,7 @@ namespace imgui_addons
 
     bool ImGuiFileBrowser::onNavigationButtonClick(int idx)
     {
-        std::string new_path(current_path);
+        std::string new_path = "";
 
         //First Button corresponds to virtual folder Computer which lists all logical drives (hard disks and removables) and "/" on Unix
         if(idx == 0)
@@ -693,10 +692,16 @@ namespace imgui_addons
             if(idx == 1)
                 new_path = current_path.substr(0, 3);
             else
-                new_path = current_path.substr(0, current_path.find("/" + current_dirlist[idx]) + current_dirlist[idx].length() + 2 );
+            {
+                //Start from i=1 since at 0 lies "MyComputer" which is only virtual and shouldn't be read by readDIR
+                for (int i = 1; i <= idx; i++)
+                    new_path += current_dirlist[i] + "/";
+            }
             #else
-            //find returns 0 based indices and substr takes length of chars thus + 1. Another +1 to include trailing "/"
-            new_path = current_path.substr(0, current_path.find("/" + current_dirlist[idx]) + current_dirlist[idx].length() + 2 );
+            //Since UNIX absolute paths start at "/", we handle this separately to avoid adding a double slash at the beginning
+            new_path += current_dirlist[0];
+            for (int i = 1; i <= idx; i++)
+                new_path += current_dirlist[i] + "/";
             #endif
         }
 
