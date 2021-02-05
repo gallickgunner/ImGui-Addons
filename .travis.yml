@@ -22,8 +22,8 @@ matrix:
               -I /usr/local/include/SDL2 \
               -lSDL2 -lGLEW \
               -framework OpenGL \
-              -o example_sdl_opengl
-3    - name : "linux build gcc"
+              -o example_sdl_opengl3
+    - name : "linux build gcc"
       os: linux
       compiler: gcc
       dist: bionic
