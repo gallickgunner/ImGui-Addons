@@ -12,7 +12,7 @@ matrix:
       script: 
         - |
           clang++ imgui/examples/example_sdl_opengl3/main.cpp \
-              imgui/imgui.cpp imgui/imgui_draw.cpp \
+              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
               imgui/imgui_widgets.cpp FileBrowser/imgui_demo.cpp \
               FileBrowser/ImGuiFileBrowser.cpp \
               -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
@@ -22,8 +22,8 @@ matrix:
               -I /usr/local/include/SDL2 \
               -lSDL2 -lGLEW \
               -framework OpenGL \
-              -o example_sdl_opengl3
-    - name : "linux build gcc"
+              -o example_sdl_opengl
+3    - name : "linux build gcc"
       os: linux
       compiler: gcc
       dist: bionic
@@ -33,7 +33,7 @@ matrix:
       script: 
        - |
          g++ imgui/examples/example_sdl_opengl3/main.cpp \
-              imgui/imgui.cpp imgui/imgui_draw.cpp \
+              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
               imgui/imgui_widgets.cpp FileBrowser/imgui_demo.cpp \
               FileBrowser/ImGuiFileBrowser.cpp \
               -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
@@ -53,7 +53,7 @@ matrix:
       script: 
        - |
          clang++ imgui/examples/example_sdl_opengl3/main.cpp \
-              imgui/imgui.cpp imgui/imgui_draw.cpp \
+              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
               imgui/imgui_widgets.cpp FileBrowser/imgui_demo.cpp \
               FileBrowser/ImGuiFileBrowser.cpp \
               -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
