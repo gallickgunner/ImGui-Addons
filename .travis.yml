@@ -12,8 +12,7 @@ matrix:
       script: 
         - |
           clang++ imgui/examples/example_sdl_opengl3/main.cpp \
-              imgui/examples/imgui_impl_sdl.cpp \
-              imgui/examples/imgui_impl_opengl3.cpp \
+              imgui/examples/example_sdl_opengl3/main.cpp \
               imgui/imgui.cpp imgui/imgui_draw.cpp \
               imgui/imgui_widgets.cpp FileBrowser/imgui_demo.cpp \
               FileBrowser/ImGuiFileBrowser.cpp \
@@ -34,8 +33,7 @@ matrix:
       script: 
        - |
          g++ imgui/examples/example_sdl_opengl3/main.cpp \
-              imgui/examples/imgui_impl_sdl.cpp \
-              imgui/examples/imgui_impl_opengl3.cpp \
+              imgui/examples/example_sdl_opengl3/main.cpp \
               imgui/imgui.cpp imgui/imgui_draw.cpp \
               imgui/imgui_widgets.cpp FileBrowser/imgui_demo.cpp \
               FileBrowser/ImGuiFileBrowser.cpp \
@@ -55,8 +53,7 @@ matrix:
       script: 
        - |
          clang++ imgui/examples/example_sdl_opengl3/main.cpp \
-              imgui/examples/imgui_impl_sdl.cpp \
-              imgui/examples/imgui_impl_opengl3.cpp \
+              imgui/examples/example_sdl_opengl3/main.cpp \
               imgui/imgui.cpp imgui/imgui_draw.cpp \
               imgui/imgui_widgets.cpp FileBrowser/imgui_demo.cpp \
               FileBrowser/ImGuiFileBrowser.cpp \
