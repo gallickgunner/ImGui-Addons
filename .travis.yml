@@ -6,9 +6,12 @@ matrix:
       os: osx
       compiler:
         - clang
-      before_install:
-        - /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
-        - brew install sdl2 glew
+      addons:
+        homebrew:
+            packages:
+            - sdl2
+            - glew
+            update: true
       script: 
         - |
           clang++ imgui/examples/example_sdl_opengl3/main.cpp \
