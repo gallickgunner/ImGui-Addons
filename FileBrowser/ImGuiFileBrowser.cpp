@@ -983,8 +983,12 @@ namespace imgui_addons
          */
         std::string max_str = "";
         valid_exts.clear();
+
+        std::string valid_str_lower( valid_types_string );
+        std::transform( valid_str_lower.begin(), valid_str_lower.end(), valid_str_lower.begin(), []( unsigned char c ) { return std::tolower( c ); } );
+
         std::string extension = "";
-        std::istringstream iss(valid_types_string);
+        std::istringstream iss(valid_str_lower);
         while(std::getline(iss, extension, ','))
         {
             if(!extension.empty())
@@ -1059,6 +1063,9 @@ namespace imgui_addons
             }
             size_t idx = selected_fn.find_last_of('.');
             std::string file_ext = idx == std::string::npos ? "" : selected_fn.substr(idx, selected_fn.length() - idx);
+            
+            std::transform( file_ext.begin(), file_ext.end(), file_ext.begin(), []( unsigned char c ) { return std::tolower( c ); } );
+
             return (std::find(valid_exts.begin(), valid_exts.end(), file_ext) != valid_exts.end());
         }
     }
