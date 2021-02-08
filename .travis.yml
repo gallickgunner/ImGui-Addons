@@ -29,6 +29,7 @@ matrix:
               -lSDL2 -lGLEW \
               -framework OpenGL \
               -o example_sdl_opengl3
+              -std=c++11
     - name : "linux build gcc"
       os: linux
       compiler: gcc
