@@ -13,6 +13,9 @@
 #include <cctype>
 #include <algorithm>
 #include <cmath>
+
+#include <sys/stat.h>
+
 #if defined (WIN32) || defined (_WIN32) || defined (__WIN32)
 #define OSWIN
 #ifndef NOMINMAX
@@ -434,10 +437,31 @@ namespace imgui_addons
         ImGui::PushItemWidth(input_bar_width);
         if(ImGui::InputTextWithHint("##FileNameInput", "Type a name...", &input_fn[0], 256, ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll))
         {
-            if(strlen(input_fn) > 0)
+            if ( strlen( input_fn ) > 0 )
             {
-                selected_fn = std::string(input_fn);
-                validate_file = true;
+                struct stat s;
+                stat( input_fn, &s );
+                if ( S_ISDIR( s.st_mode ) )
+                {
+                    //If input is a directory...
+                    current_path = input_fn;
+                    std::replace( current_path.begin(), current_path.end(), '\\', '/' );
+
+                    //Browse there
+                    readDIR( current_path );
+
+                    //Reset nav tabs
+                    current_dirlist.clear();
+                    parsePathTabs( current_path );
+
+                    //Clean out inputbox
+                    input_fn[ 0 ] = 0;
+                }
+                else
+                {
+                    selected_fn = std::string( input_fn );
+                    validate_file = true;
+                }
             }
         }
         ImGui::PopItemWidth();
