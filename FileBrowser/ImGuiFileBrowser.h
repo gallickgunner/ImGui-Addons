@@ -101,7 +101,7 @@ namespace imgui_addons
             DialogMode dialog_mode;
             int filter_mode, col_items_limit, selected_idx, selected_ext_idx;
             float col_width, ext_box_width;
-            bool show_hidden, show_inputbar_combobox, is_dir, is_appearing, filter_dirty, validate_file;
+            bool show_hidden, show_inputbar_combobox, is_dir, is_appearing, filter_dirty, validate_file, show_files_with_valid_extensions, show_all_files;
             char input_fn[256];
 
             std::vector<std::string> valid_exts;

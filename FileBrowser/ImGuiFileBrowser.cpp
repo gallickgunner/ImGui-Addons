@@ -36,6 +36,8 @@ namespace imgui_addons
         is_dir = false;
         filter_dirty = true;
         is_appearing = true;
+        show_files_with_valid_extensions = true;
+        show_all_files = false;
 
         col_items_limit = 12;
         selected_idx = -1;
@@ -641,12 +643,28 @@ namespace imgui_addons
     void ImGuiFileBrowser::renderExtBox()
     {
         ImGui::PushItemWidth(ext_box_width);
-        if(ImGui::BeginCombo("##FileTypes", valid_exts[selected_ext_idx].c_str()))
+
+        const char * selected_label = valid_exts[ selected_ext_idx ].c_str();
+        if ( show_files_with_valid_extensions )
+            selected_label = "All valid extensions";
+        if ( show_all_files )
+            selected_label = "All files (*.*)";
+
+        if(ImGui::BeginCombo("##FileTypes", selected_label ))
         {
+            if ( ImGui::Selectable( "All valid extensions", &show_files_with_valid_extensions ) )
+            {
+                show_all_files = false;
+                filterFiles( FilterMode_Files );
+            }
+
             for(int i = 0; i < valid_exts.size(); i++)
             {
-                if(ImGui::Selectable(valid_exts[i].c_str(), selected_ext_idx == i))
+                if(ImGui::Selectable(valid_exts[i].c_str(), selected_ext_idx == i && !show_all_files && !show_files_with_valid_extensions))
                 {
+                    show_files_with_valid_extensions = false;
+                    show_all_files = false;
+
                     selected_ext_idx = i;
                     if(dialog_mode == DialogMode::SAVE)
                     {
@@ -661,6 +679,13 @@ namespace imgui_addons
                     filterFiles(FilterMode_Files);
                 }
             }
+
+            if ( ImGui::Selectable( "All files (*.*)", &show_all_files ) )
+            {
+                show_files_with_valid_extensions = false;
+                filterFiles( FilterMode_Files );
+            }
+
             ImGui::EndCombo();
         }
         ext = valid_exts[selected_ext_idx];
@@ -865,7 +890,19 @@ namespace imgui_addons
             filtered_files.clear();
             for (size_t i = 0; i < subfiles.size(); ++i)
             {
-                if(valid_exts[selected_ext_idx] == "*.*")
+                if ( show_files_with_valid_extensions )
+                {
+                    if(filter.PassFilter(subfiles[i].name.c_str()))
+                    {
+                        std::string ext = subfiles[i].name.find_last_of('.') == std::string::npos ? "" : subfiles[i].name.substr(subfiles[i].name.find_last_of('.'));
+                        std::transform(ext.begin(), ext.end(), ext.begin(), [](unsigned char c){ return std::tolower(c); });
+                        if (ext.length() > 0 && find(valid_exts.begin(), valid_exts.end(),ext) != valid_exts.end())
+                        {
+                            filtered_files.push_back(&subfiles[i]);
+                        }
+                    }
+                }
+                else if(valid_exts[selected_ext_idx] == "*.*" || show_all_files)
                 {
                     if(filter.PassFilter(subfiles[i].name.c_str()))
                         filtered_files.push_back(&subfiles[i]);
