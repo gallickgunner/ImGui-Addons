@@ -2,7 +2,7 @@
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
-#include "imgui_internal.h"
+#include "imgui/imgui_internal.h"
 
 #include <iostream>
 #include <functional>
@@ -417,11 +417,13 @@ namespace imgui_addons
         ImVec2 pw_content_sz = ImGui::GetWindowSize() - style.WindowPadding * 2.0;
         ImVec2 cursor_pos = ImGui::GetCursorPos();
 
-        if(ext_box_width < 0.0)
-            ext_box_width = ImGui::CalcTextSize(".abc").x + 100;
         float label_width = ImGui::CalcTextSize(label.c_str()).x + style.ItemSpacing.x;
         float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
         float input_bar_width = pw_content_sz.x - label_width;
+
+        if(ext_box_width < 0.0)
+            ext_box_width = ImGui::CalcTextSize("All Valid Files").x + style.ItemSpacing.x + ImGui::GetFrameHeightWithSpacing() + 10;
+
         if(dialog_mode != DialogMode::SELECT)
             input_bar_width -= (ext_box_width + style.ItemSpacing.x);
 
@@ -524,14 +526,8 @@ namespace imgui_addons
         bool show_error = false;
         float frame_height = ImGui::GetFrameHeight();
         float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
-        float opensave_btn_width = getButtonSize("Open").x;     // Since both Open/Save are 4 characters long, width gonna be same.
-        float selcan_btn_width = getButtonSize("Cancel").x;     // Since both Cacnel/Select have same number of characters, so same width.
-        float buttons_xpos;
-
-        if (dialog_mode == DialogMode::SELECT)
-            buttons_xpos = pw_size.x - opensave_btn_width - (2.0f * selcan_btn_width) - ( 2.0f * style.ItemSpacing.x) - style.WindowPadding.x;
-        else
-            buttons_xpos = pw_size.x - opensave_btn_width - selcan_btn_width - style.ItemSpacing.x - style.WindowPadding.x;
+        float button_width = (ext_box_width - style.ItemSpacing.x) / 2.0;
+        float buttons_xpos =  pw_size.x - button_width * 2.0 - style.ItemSpacing.x - style.WindowPadding.x;
 
         ImGui::SetCursorPosY(pw_size.y - frame_height_spacing - style.WindowPadding.y);
 
@@ -553,10 +549,10 @@ namespace imgui_addons
             // If directory selected and Input Text Bar doesn't have focus, render Open Button
             if(selected_idx != -1 && is_dir && ImGui::GetFocusID() != ImGui::GetID("##FileNameInput"))
             {
-                if (ImGui::Button("Open"))
+                if (ImGui::Button("Open", ImVec2(button_width, 0)))
                     show_error |= !(onDirClick(selected_idx));
             }
-            else if (ImGui::Button("Save") && strlen(input_fn) > 0)
+            else if (ImGui::Button("Save", ImVec2(button_width, 0)) && strlen(input_fn) > 0)
             {
                 selected_fn = std::string(input_fn);
                 validate_file = true;
@@ -564,7 +560,7 @@ namespace imgui_addons
         }
         else
         {
-            if (ImGui::Button("Open"))
+            if (ImGui::Button("Open", ImVec2(button_width, 0)))
             {
                 //It's possible for both to be true at once (user selected directory but input bar has some text. In this case we chose to open the directory instead of opening the file.
                 //Also note that we don't need to access the selected file through "selected_idx" since the if a file is selected, input bar will get populated with that name.
@@ -582,7 +578,7 @@ namespace imgui_addons
             {
                 //Render Select Button
                 ImGui::SameLine();
-                if (ImGui::Button("Select"))
+                if (ImGui::Button("Select", ImVec2(button_width, 0)))
                 {
                     if(strlen(input_fn) > 0)
                     {
@@ -595,7 +591,7 @@ namespace imgui_addons
 
         //Render Cancel Button
         ImGui::SameLine();
-        if (ImGui::Button("Cancel"))
+        if (ImGui::Button("Cancel", ImVec2(button_width, 0)))
             closeDialog();
 
         return show_error;
@@ -669,13 +665,13 @@ namespace imgui_addons
 
         const char * selected_label = valid_exts[ selected_ext_idx ].c_str();
         if ( show_files_with_valid_extensions )
-            selected_label = "All valid extensions";
-        if ( show_all_files )
+            selected_label = "All valid files";
+        else if ( show_all_files )
             selected_label = "All files (*.*)";
 
         if(ImGui::BeginCombo("##FileTypes", selected_label ))
         {
-            if ( ImGui::Selectable( "All valid extensions", &show_files_with_valid_extensions ) )
+            if ( ImGui::Selectable( "All valid files", &show_files_with_valid_extensions ) )
             {
                 show_all_files = false;
                 filterFiles( FilterMode_Files );
@@ -1037,7 +1033,6 @@ namespace imgui_addons
          * If the user chooses a file that doesn't match the extensions in the
          * list, we will show an error modal...
          */
-        std::string max_str = "";
         valid_exts.clear();
 
         std::string valid_str_lower( valid_types_string );
@@ -1048,14 +1043,8 @@ namespace imgui_addons
         while(std::getline(iss, extension, ','))
         {
             if(!extension.empty())
-            {
-                if(max_str.size() < extension.size())
-                    max_str = extension;
                 valid_exts.push_back(extension);
-            }
         }
-        float min_width = ImGui::CalcTextSize(".abc").x + 100;
-        ext_box_width = std::max(min_width, ImGui::CalcTextSize(max_str.c_str()).x);
     }
 
     bool ImGuiFileBrowser::validateFile()
@@ -1119,7 +1108,7 @@ namespace imgui_addons
             }
             size_t idx = selected_fn.find_last_of('.');
             std::string file_ext = idx == std::string::npos ? "" : selected_fn.substr(idx, selected_fn.length() - idx);
-            
+
             std::transform( file_ext.begin(), file_ext.end(), file_ext.begin(), []( unsigned char c ) { return std::tolower( c ); } );
 
             return (std::find(valid_exts.begin(), valid_exts.end(), file_ext) != valid_exts.end());

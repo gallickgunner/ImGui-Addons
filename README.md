@@ -12,7 +12,7 @@ Code uses ported `dirent.h` provided by Toni on Windows and on UNIX code uses st
 Thanks to [@Sandy](https://github.com/bwrsandman), the code was tested on linux and runs fine except except that double clicks don't work all the time. This might be due to problems in ImGui itself or a problem on a specific computer only. So if anybody else encounters any issues do tell me.
 
 ### Usage
-Copy all the necessary ImGui files in one folder and include it's path in your IDE. Also include the path to `Dirent` folder so `dirent.h` is accessible as `Dirent/dirent.h`. Now include `ImGuiFileBrowser.h` and use it like this..
+Copy all the necessary ImGui files in a folder named `imgui` and include it's path in your IDE. These files must be accessible as `imgui/imgui.h` and so on. Also include the path to `Dirent` folder so `dirent.h` is accessible as `Dirent/dirent.h`. If you don't like these include paths, you can change how `ImGuiFileBrowser.h` and the corresponding cpp file accesses these yourself. Now include `ImGuiFileBrowser.h` and use it like this..
 ```
 ..
 imgui_addons::ImGuiFileBrowser file_dialog; // As a class member or globally
