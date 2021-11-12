@@ -18,7 +18,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-      submodules: 'recursive'
+      with:
+        submodules: recursive
 
     - name: Add brew packages
       if: matrix.os == 'macos-latest'
