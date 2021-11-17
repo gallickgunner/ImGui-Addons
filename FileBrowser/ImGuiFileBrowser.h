@@ -1,7 +1,7 @@
 #ifndef IMGUIFILEBROWSER_H
 #define IMGUIFILEBROWSER_H
 
-#include <imgui/imgui.h>
+#include <imgui.h>
 #include <string>
 #include <vector>
 
