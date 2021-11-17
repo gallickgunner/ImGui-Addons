@@ -64,7 +64,7 @@ jobs:
               -I imgui/examples \
               -I imgui/backends \
               -I /usr/include/SDL2 \
-              -lSDL2 -lGL -lGLEW \
+              -lSDL2 -lGL -lGLEW -ldl \
               -o example_sdl_opengl3
         g++ imgui/examples/example_sdl_opengl3/main.cpp \
               imgui/backends/imgui_impl_opengl3.cpp \
@@ -77,5 +77,5 @@ jobs:
               -I imgui/examples \
               -I imgui/backends \
               -I /usr/include/SDL2 \
-              -lSDL2 -lGL -lGLEW \
+              -lSDL2 -lGL -lGLEW -ldl \
               -o example_sdl_opengl3
