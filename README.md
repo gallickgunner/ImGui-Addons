@@ -1,5 +1,5 @@
 
-[![Build Status](https://travis-ci.com/gallickgunner/ImGui-Addons.svg?branch=master)](https://travis-ci.com/gallickgunner/ImGui-Addons)
+![BUILD STATUS](https://github.com/gallickgunner/ImGui-Addons/actions/workflows/ci.yml/badge.svg)
 
 *Note: Recent changes to travis-ci pricing and all the credits nonsense are going over my head. It seems the credits will be allotted monthly. Anyways the recent commit is shown as failing but it should working as I haven't changed much just the include paths which I unfortunately forgot to change in the travis file. For anything else just open up an issue. Thanks*
 
