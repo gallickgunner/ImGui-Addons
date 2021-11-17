@@ -28,7 +28,9 @@ jobs:
 
     - name: Add apt packages
       if: matrix.os == 'ubuntu-latest'
-      run: sudo apt-get install -y --no-install-recommends libxrandr-dev libxi-dev libxxf86vm-dev libsdl2-dev libglew-dev
+      run: |
+      sudo apt-get update -qq
+      sudo apt-get install -y --no-install-recommends libxrandr-dev libxi-dev libxxf86vm-dev libsdl2-dev libglew-dev
 
     - name: Build OSX
       if: matrix.os == 'macos-latest'
