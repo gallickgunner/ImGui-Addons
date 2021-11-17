@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: macos-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        submodules: recursive
+
+    - name: Add brew packages
+      if: matrix.os == 'macos-latest'
+      shell: bash
+      run: brew install sdl2 glew
+
+    - name: Add apt packages
+      if: matrix.os == 'ubuntu-latest'
+      run: sudo apt-get install -y --no-install-recommends libxrandr-dev libxi-dev libxxf86vm-dev libsdl2-dev libglew-dev
+
+    - name: Build OSX
+      if: matrix.os == 'macos-latest'
+      run: |
+         clang++ -std=c++11 -stdlib=libc++ imgui/examples/example_sdl_opengl3/main.cpp \
+              imgui/backends/imgui_impl_opengl3.cpp \
+              imgui/backends/imgui_impl_sdl.cpp     \
+              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
+              imgui/imgui_widgets.cpp FileBrowser/imgui_demo.cpp \
+              FileBrowser/ImGuiFileBrowser.cpp \
+              -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
+              -I imgui \
+              -I imgui/examples \
+              -I imgui/backends \
+              -I /usr/local/include/SDL2 \
+              -lSDL2 -lGLEW \
+              -framework OpenGL \
+              -o example_sdl_opengl3
+
+    - name: Build Linux
+      if: matrix.os == 'ubuntu-latest'
+      run: |
+        clang++ imgui/examples/example_sdl_opengl3/main.cpp \
+              imgui/backends/imgui_impl_opengl3.cpp \
+              imgui/backends/imgui_impl_sdl.cpp     \
+              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
+              imgui/imgui_widgets.cpp FileBrowser/imgui_demo.cpp \
+              FileBrowser/ImGuiFileBrowser.cpp \
+              -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
+              -I imgui \
+              -I imgui/examples \
+              -I imgui/backends \
+              -I /usr/include/SDL2 \
+              -lSDL2 -lGL -lGLEW \
+              -o example_sdl_opengl3
+        g++ imgui/examples/example_sdl_opengl3/main.cpp \
+              imgui/backends/imgui_impl_opengl3.cpp \
+              imgui/backends/imgui_impl_sdl.cpp     \
+              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
+              imgui/imgui_widgets.cpp FileBrowser/imgui_demo.cpp \
+              FileBrowser/ImGuiFileBrowser.cpp \
+              -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
+              -I imgui \
+              -I imgui/examples \
+              -I imgui/backends \
+              -I /usr/include/SDL2 \
+              -lSDL2 -lGL -lGLEW \
+              -o example_sdl_opengl3
