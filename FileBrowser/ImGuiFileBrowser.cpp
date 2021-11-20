@@ -261,7 +261,7 @@ namespace imgui_addons
                     if(ImGui::BeginPopup("##NavBarDropboxPopup"))
                     {
                         ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(0.125f, 0.125f, 0.125f, 1.0f));
-                        if(ImGui::ListBoxHeader("##NavBarDropBox", ImVec2(0, list_item_height* 5)))
+                        if(ImGui::BeginListBox("##NavBarDropBox", ImVec2(0, list_item_height* 5)))
                         {
                             ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
                             for(std::vector<std::string>::size_type j = i+1; j < current_dirlist.size(); j++)
@@ -273,7 +273,7 @@ namespace imgui_addons
                                 }
                             }
                             ImGui::PopStyleColor();
-                            ImGui::ListBoxFooter();
+                            ImGui::EndListBox();
                         }
                         ImGui::PopStyleColor();
                         ImGui::EndPopup();
@@ -626,7 +626,7 @@ namespace imgui_addons
             ImGui::BeginChild("##InputBarComboBox", input_combobox_sz, true, popupFlags);
 
             ImVec2 listbox_size = input_combobox_sz - ImGui::GetStyle().WindowPadding * 2.0f;
-            if(ImGui::ListBoxHeader("##InputBarComboBoxList", listbox_size))
+            if(ImGui::BeginListBox("##InputBarComboBoxList", listbox_size))
             {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f,1.0f));
                 ImGui::PushFocusScope(focus_scope_id);
@@ -649,7 +649,7 @@ namespace imgui_addons
                 }
                 ImGui::PopFocusScope();
                 ImGui::PopStyleColor(1);
-                ImGui::ListBoxFooter();
+                ImGui::EndListBox();
             }
             ImGui::EndChild();
             ImGui::PopStyleColor(2);
