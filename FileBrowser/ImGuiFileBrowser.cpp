@@ -66,6 +66,11 @@ namespace imgui_addons
 
     }
 
+    bool ImGuiFileBrowser::isClose()
+    {
+        return is_close;
+    }
+
     void ImGuiFileBrowser::clearFileList()
     {
         //Clear pointer references to subdirs and subfiles
@@ -107,11 +112,12 @@ namespace imgui_addons
         subfiles.clear();
 
         ImGui::CloseCurrentPopup();
+        is_close = true;
     }
 
     bool ImGuiFileBrowser::showFileDialog(const std::string& label, const DialogMode mode, const ImVec2& sz_xy, const std::string& valid_types)
     {
-
+        is_close = false;
         dialog_mode = mode;
         ImGuiIO& io = ImGui::GetIO();
         max_size.x = io.DisplaySize.x;
