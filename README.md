@@ -59,6 +59,10 @@ void showMainMenu()
         std::cout << file_dialog.ext << std::endl;              // Access ext separately (For SAVE mode)
         //Do writing of files based on extension here
     }
+    if(file_dialog.isClose()){
+        open = false;
+        save = false;
+    }
 }
 ```
 Note that the Save file dialog just stores whatever name the user types in `selected_fn` The user may try to save with a different extension than one already selected in the *extension box* This is upto the programmer, whether to use the extension selected in the UI or the one typed in the file name by the user. I've also added the modified `imgui_demo.cpp` to include the file dialog in the menu bar so you can check how it's working there. 
