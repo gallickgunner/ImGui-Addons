@@ -1,9 +1,6 @@
 
 ![BUILD STATUS](https://github.com/gallickgunner/ImGui-Addons/actions/workflows/ci.yml/badge.svg)
 
-*Note: Recent changes to travis-ci pricing and all the credits nonsense are going over my head. It seems the credits will be allotted monthly. Anyways the recent commit is shown as failing but it should working as I haven't changed much just the include paths which I unfortunately forgot to change in the travis file. For anything else just open up an issue. Thanks*
-
-
 # ImGui-Addons
 Addon widgets for GUI library Dear ImGui.
 
@@ -15,7 +12,7 @@ Code uses ported `dirent.h` provided by Toni on Windows and on UNIX code uses st
 Thanks to [@Sandy](https://github.com/bwrsandman), the code was tested on linux and runs fine except except that double clicks don't work all the time. This might be due to problems in ImGui itself or a problem on a specific computer only. So if anybody else encounters any issues do tell me.
 
 ### Usage
-Copy all the necessary ImGui files in a folder named `imgui` and include it's path in your IDE. These files must be accessible as `imgui.h` and so on without specifying the subdirectory they are in. Also include the path to `Dirent` folder so `dirent.h` is accessible as `dirent.h`. If you don't like these include paths, you can change how `ImGuiFileBrowser.h` and the corresponding cpp file accesses these yourself. Now include `ImGuiFileBrowser.h` and use it like this..
+Make sure all the imgui files are accessible as `imgui.h` and so on without specifying the folder they are in. You must mention the path to the folder they are in, in your IDE. Also make sure `dirent.h` is accessible as `Dirent/dirent.h`. If you don't like these include paths, you can change how `ImGuiFileBrowser.h` and the corresponding cpp file accesses these yourself. Now include `ImGuiFileBrowser.h` and use it like this..
 ```
 ..
 imgui_addons::ImGuiFileBrowser file_dialog; // As a class member or globally
