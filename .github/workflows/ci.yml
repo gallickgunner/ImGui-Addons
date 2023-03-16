@@ -35,7 +35,7 @@ jobs:
     - name: Build OSX
       if: matrix.os == 'macos-latest'
       run: |
-         clang++ -std=c++11 -stdlib=libc++ imgui/examples/example_sdl_opengl3/main.cpp \
+         clang++ -std=c++11 -stdlib=libc++ imgui/examples/example_sdl2_opengl3/main.cpp \
               imgui/backends/imgui_impl_opengl3.cpp \
               imgui/backends/imgui_impl_sdl.cpp     \
               imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
@@ -48,12 +48,12 @@ jobs:
               -I /usr/local/include/SDL2 \
               -lSDL2 -lGLEW \
               -framework OpenGL \
-              -o example_sdl_opengl3
+              -o example_sdl2_opengl3
 
     - name: Build Linux
       if: matrix.os == 'ubuntu-latest'
       run: |
-        clang++ imgui/examples/example_sdl_opengl3/main.cpp \
+        clang++ imgui/examples/example_sdl2_opengl3/main.cpp \
               imgui/backends/imgui_impl_opengl3.cpp \
               imgui/backends/imgui_impl_sdl.cpp     \
               imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
@@ -65,8 +65,8 @@ jobs:
               -I imgui/backends \
               -I /usr/include/SDL2 \
               -lSDL2 -lGL -lGLEW -ldl \
-              -o example_sdl_opengl3
-        g++ imgui/examples/example_sdl_opengl3/main.cpp \
+              -o example_sdl2_opengl3
+        g++ imgui/examples/example_sdl2_opengl3/main.cpp \
               imgui/backends/imgui_impl_opengl3.cpp \
               imgui/backends/imgui_impl_sdl.cpp     \
               imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
@@ -78,4 +78,4 @@ jobs:
               -I imgui/backends \
               -I /usr/include/SDL2 \
               -lSDL2 -lGL -lGLEW -ldl \
-              -o example_sdl_opengl3
+              -o example_sdl2_opengl3
