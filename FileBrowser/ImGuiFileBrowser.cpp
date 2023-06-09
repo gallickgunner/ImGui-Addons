@@ -30,6 +30,8 @@
 
 namespace imgui_addons
 {
+    static const char *ALL_VALID_FILES_EXT_TXT = "All valid files";
+
     ImGuiFileBrowser::ImGuiFileBrowser()
     {
         filter_mode = FilterMode_Files | FilterMode_Dirs;
@@ -672,7 +674,7 @@ namespace imgui_addons
 
                 if(ImGui::Selectable(label_text.c_str(), selected_ext_idx == static_cast<int>(i)))
                 {
-                    show_all_valid_files = (label_text == "All valid files");
+                    show_all_valid_files = (label_text == ALL_VALID_FILES_EXT_TXT);
                     selected_ext_idx = i;
                     //Automatically append extension to input filename when changing extensions from dropdown
                     if(dialog_mode == DialogMode::SAVE)
@@ -1003,15 +1005,19 @@ namespace imgui_addons
 
             ImVec2 button_size = getButtonSize("OK");
 
-            float frame_height = ImGui::GetFrameHeightWithSpacing();
-            float cw_content_height = (valid_exts.size() - 1) * frame_height;
-            float cw_height = std::min<float>(4.0f * frame_height, cw_content_height);
-
             ImGui::TextWrapped("%s", text.c_str());
             if(valid_exts.back() != "*.*")
             {
+                // Number of extension to display in the child window.
+                auto ext_count = (valid_exts.back() == ALL_VALID_FILES_EXT_TXT) ? (valid_exts.size() - 1) : valid_exts.size();
+                // Clamp to item count of 4 for window height.
+                auto items_for_height = std::min<decltype(ext_count)>(4, ext_count);
+                // Get window height by item count.
+                ImGuiStyle &style = ImGui::GetStyle();
+                // ext_count (thus items_for_height) > 0 holds for current implementation.
+                float cw_height = items_for_height * ImGui::GetTextLineHeightWithSpacing() - style.ItemSpacing.y + style.WindowPadding.y * 2;
                 ImGui::BeginChild("##SupportedExts", ImVec2(0, cw_height), true);
-                for(std::vector<std::string>::size_type i = 0; i < valid_exts.size() - 1; i++)
+                for(decltype(ext_count) i = 0; i < ext_count; i++)
                     ImGui::BulletText("%s", valid_exts[i].c_str());
                 ImGui::EndChild();
             }
@@ -1050,7 +1056,7 @@ namespace imgui_addons
 
         //Add an option to support all valid extensions
         if(valid_exts.size() > 1 && dialog_mode == DialogMode::OPEN)
-            valid_exts.push_back("All valid files");
+            valid_exts.push_back(ALL_VALID_FILES_EXT_TXT);
 
         //Add all files option in last
         if(all_files)
