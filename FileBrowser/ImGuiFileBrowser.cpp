@@ -99,6 +99,7 @@ namespace imgui_addons
         is_dir = false;
         filter_dirty = true;
         is_appearing = true;
+        show_all_valid_files = false;
 
         //Clear pointer references to subdirs and subfiles
         filtered_dirs.clear();
