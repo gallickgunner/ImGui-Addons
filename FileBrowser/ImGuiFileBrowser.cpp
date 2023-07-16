@@ -528,8 +528,8 @@ namespace imgui_addons
         bool show_error = false;
         float frame_height = ImGui::GetFrameHeight();
         float frame_height_spacing = ImGui::GetFrameHeightWithSpacing();
-        float button_width = (ext_box_width - style.ItemSpacing.x) / 2.0;
-        float buttons_xpos =  pw_size.x - button_width * 2.0 - style.ItemSpacing.x - style.WindowPadding.x;
+        float button_width = (ext_box_width - style.ItemSpacing.x) / ( (dialog_mode == DialogMode::SELECT) ? 3.0 : 2.0 );
+        float buttons_xpos =  pw_size.x - button_width * ( (dialog_mode == DialogMode::SELECT) ? 3.0 : 2.0 ) - style.ItemSpacing.x * ( ( dialog_mode == DialogMode::SELECT ) ? 2 : 1 ) - style.WindowPadding.x;
 
         ImGui::SetCursorPosY(pw_size.y - frame_height_spacing - style.WindowPadding.y);
 
