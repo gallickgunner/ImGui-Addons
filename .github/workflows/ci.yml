@@ -11,7 +11,7 @@ permissions:
   pull-requests: read
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.pull_request.head.repo.full_name || github.repository }}-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -36,21 +36,15 @@ jobs:
             echo "has_open_pr=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
           if [ "$BRANCH_NAME" = "master" ]; then
             echo "has_open_pr=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-
-          COUNT=$(gh pr list \
-            --repo "$REPO" \
-            --head "$OWNER:$BRANCH_NAME" \
-            --state open \
-            --json number \
+          COUNT=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$REPO/pulls?state=open&head=$OWNER:$BRANCH_NAME" \
             --jq 'length')
-
-          echo "Open PR count for branch '$BRANCH_NAME': $COUNT"
-
+          echo "Open PR count for branch '$OWNER:$BRANCH_NAME': $COUNT"
           if [ "$COUNT" -gt 0 ]; then
             echo "has_open_pr=true" >> "$GITHUB_OUTPUT"
           else
