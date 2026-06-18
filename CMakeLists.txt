@@ -157,6 +157,13 @@ set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 
+# For CI/simple preview builds, prefer X11 on Linux and avoid requiring
+# Wayland development tools such as wayland-scanner.
+if(UNIX AND NOT APPLE)
+    set(GLFW_BUILD_X11 ON CACHE BOOL "" FORCE)
+    set(GLFW_BUILD_WAYLAND OFF CACHE BOOL "" FORCE)
+endif()
+
 FetchContent_Declare(
     glfw
     GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -167,7 +174,6 @@ FetchContent_Declare(
 )
 
 FetchContent_MakeAvailable(glfw)
-
 # ============================================================
 # OpenGL
 # ============================================================
