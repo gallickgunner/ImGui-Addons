@@ -1,5 +1,6 @@
 
 ![BUILD STATUS](https://github.com/gallickgunner/ImGui-Addons/actions/workflows/ci.yml/badge.svg)
+![Dear ImGui version](https://img.shields.io/badge/Dear%20ImGui%20Updated-v1.92.8-blue)
 
 # ImGui-Addons
 Addon widgets for GUI library Dear ImGui.

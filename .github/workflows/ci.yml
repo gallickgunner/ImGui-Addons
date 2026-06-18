@@ -2,80 +2,94 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 
 jobs:
+  detect-open-pr:
+    name: Detect open PR
+    runs-on: ubuntu-latest
+
+    outputs:
+      has_open_pr: ${{ steps.check.outputs.has_open_pr }}
+
+    steps:
+      - name: Check if pushed branch already has an open PR
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH_NAME: ${{ github.ref_name }}
+          EVENT_NAME: ${{ github.event_name }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          if [ "$EVENT_NAME" != "push" ]; then
+            echo "has_open_pr=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if [ "$BRANCH_NAME" = "master" ]; then
+            echo "has_open_pr=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          COUNT=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/repos/$REPO/pulls?state=open&head=$OWNER:$BRANCH_NAME" \
+            --jq 'length')
+          echo "Open PR count for branch '$OWNER:$BRANCH_NAME': $COUNT"
+          if [ "$COUNT" -gt 0 ]; then
+            echo "has_open_pr=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_open_pr=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    name: Build on ${{ matrix.os }}
+    needs: detect-open-pr
+
+    if: >
+      github.event_name == 'pull_request' ||
+      github.ref == 'refs/heads/master' ||
+      needs.detect-open-pr.outputs.has_open_pr == 'false'
+
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-          - os: macos-latest
+        os:
+          - ubuntu-latest
+          - macos-latest
 
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
-    - name: Add brew packages
-      if: matrix.os == 'macos-latest'
-      shell: bash
-      run: brew install sdl2 glew
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            xorg-dev \
+            libgl1-mesa-dev
 
-    - name: Add apt packages
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends libxrandr-dev libxi-dev libxxf86vm-dev libsdl2-dev libglew-dev
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DIMGADDONS_BUILD_PREVIEW=ON \
+            -DIMGADDONS_RUNTIME_OUTPUT_DIR="${{ github.workspace }}/build/bin"
 
-    - name: Build OSX
-      if: matrix.os == 'macos-latest'
-      run: |
-         clang++ -std=c++11 -stdlib=libc++ imgui/examples/example_sdl2_opengl3/main.cpp \
-              imgui/backends/imgui_impl_opengl3.cpp \
-              imgui/backends/imgui_impl_sdl2.cpp     \
-              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
-              imgui/imgui_widgets.cpp imgui/imgui_demo.cpp \
-              FileBrowser/ImGuiFileBrowser.cpp \
-              -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
-              -I imgui \
-              -I imgui/examples \
-              -I imgui/backends \
-              -I /usr/local/include/SDL2 \
-              -lSDL2 -lGLEW \
-              -framework OpenGL \
-              -o example_sdl2_opengl3
-
-    - name: Build Linux
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        clang++ imgui/examples/example_sdl2_opengl3/main.cpp \
-              imgui/backends/imgui_impl_opengl3.cpp \
-              imgui/backends/imgui_impl_sdl2.cpp     \
-              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
-              imgui/imgui_widgets.cpp imgui/imgui_demo.cpp \
-              FileBrowser/ImGuiFileBrowser.cpp \
-              -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
-              -I imgui \
-              -I imgui/examples \
-              -I imgui/backends \
-              -I /usr/include/SDL2 \
-              -lSDL2 -lGL -lGLEW -ldl \
-              -o example_sdl2_opengl3
-        g++ imgui/examples/example_sdl2_opengl3/main.cpp \
-              imgui/backends/imgui_impl_opengl3.cpp \
-              imgui/backends/imgui_impl_sdl2.cpp     \
-              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
-              imgui/imgui_widgets.cpp imgui/imgui_demo.cpp \
-              FileBrowser/ImGuiFileBrowser.cpp \
-              -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
-              -I imgui \
-              -I imgui/examples \
-              -I imgui/backends \
-              -I /usr/include/SDL2 \
-              -lSDL2 -lGL -lGLEW -ldl \
-              -o example_sdl2_opengl3
+      - name: Build
+        run: |
+          cmake --build build --config Release --parallel
