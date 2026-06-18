@@ -233,7 +233,10 @@ namespace imgui_addons
         ImVec2 nw_size = ImVec2(pw_content_size.x - style.ItemSpacing.x - sw_size.x, sw_size.y);
 
 
-        ImGui::BeginChild("##NavigationWindow", nw_size, true, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar);
+        ImGui::BeginChild("##NavigationWindow", nw_size, ImGuiChildFlags_Borders |
+														 ImGuiChildFlags_AutoResizeX |
+														 ImGuiChildFlags_AutoResizeY |
+														 ImGuiChildFlags_AlwaysAutoResize, ImGuiWindowFlags_NoScrollbar);
 
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
         for(std::vector<std::string>::size_type i = 0; i < current_dirlist.size(); i++)
@@ -289,7 +292,9 @@ namespace imgui_addons
                 {
                     ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.0f, 1.0f, 1.0f, 0.01f));
                     ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.0f, 1.0f,1.0f));
+					ImGui::PushID(static_cast<int>(i));
                     ImGui::ArrowButtonEx("##Right", ImGuiDir_Right, ImVec2(frame_height, frame_height), ImGuiItemFlags_Disabled);
+					ImGui::PopID();
                     ImGui::SameLine(0,0);
                     ImGui::PopStyleColor(2);
                 }
@@ -299,7 +304,10 @@ namespace imgui_addons
         ImGui::EndChild();
 
         ImGui::SameLine();
-        ImGui::BeginChild("##SearchWindow", sw_size, true, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar);
+        ImGui::BeginChild("##SearchWindow", sw_size, ImGuiChildFlags_Borders |
+													 ImGuiChildFlags_AutoResizeX |
+													 ImGuiChildFlags_AutoResizeY |
+													 ImGuiChildFlags_AlwaysAutoResize, ImGuiWindowFlags_NoScrollbar);
 
         //Render Search/Filter bar
         float marker_width = ImGui::CalcTextSize("(?)").x + style.ItemSpacing.x;
@@ -348,7 +356,7 @@ namespace imgui_addons
             content_width = 0;
 
         ImGui::SetNextWindowContentSize(ImVec2(content_width, 0));
-        ImGui::BeginChild("##ScrollingRegion", ImVec2(0, window_height), true, ImGuiWindowFlags_HorizontalScrollbar);
+        ImGui::BeginChild("##ScrollingRegion", ImVec2(0, window_height), ImGuiChildFlags_Borders, ImGuiWindowFlags_HorizontalScrollbar);
         ImGui::Columns(num_cols);
 
         //Output directories in yellow
@@ -626,7 +634,7 @@ namespace imgui_addons
             ImGui::SetNextWindowPos(input_combobox_pos + ImVec2(0, ImGui::GetFrameHeightWithSpacing()));
             ImGui::PushClipRect(ImVec2(0,0), ImGui::GetIO().DisplaySize, false);
 
-            ImGui::BeginChild("##InputBarComboBox", input_combobox_sz, true, popupFlags);
+            ImGui::BeginChild("##InputBarComboBox", input_combobox_sz, ImGuiChildFlags_Borders, popupFlags);
 
             ImVec2 listbox_size = input_combobox_sz - ImGui::GetStyle().WindowPadding * 2.0f;
             if(ImGui::BeginListBox("##InputBarComboBoxList", listbox_size))
@@ -1017,7 +1025,7 @@ namespace imgui_addons
                 ImGuiStyle &style = ImGui::GetStyle();
                 // ext_count (thus items_for_height) > 0 holds for current implementation.
                 float cw_height = items_for_height * ImGui::GetTextLineHeightWithSpacing() - style.ItemSpacing.y + style.WindowPadding.y * 2;
-                ImGui::BeginChild("##SupportedExts", ImVec2(0, cw_height), true);
+                ImGui::BeginChild("##SupportedExts", ImVec2(0, cw_height), ImGuiChildFlags_Borders);
                 for(decltype(ext_count) i = 0; i < ext_count; i++)
                     ImGui::BulletText("%s", valid_exts[i].c_str());
                 ImGui::EndChild();
