@@ -2,85 +2,43 @@ name: CI
 
 on:
   push:
-    branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   build:
+    name: Build on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: ubuntu-latest
-          - os: macos-latest
+        os:
+          - ubuntu-latest
+          - macos-latest
 
     steps:
-    - uses: actions/checkout@v2
-      with:
-        submodules: recursive
+      - name: Checkout repository
+        uses: actions/checkout@v5
+        with:
+          submodules: recursive
 
-    - name: Add brew packages
-      if: matrix.os == 'macos-latest'
-      shell: bash
-      run: brew install sdl2 glew
+      - name: Install Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            xorg-dev \
+            libgl1-mesa-dev
 
-    - name: Add apt packages
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        sudo apt-get update -qq
-        sudo apt-get install -y --no-install-recommends libxrandr-dev libxi-dev libxxf86vm-dev libsdl2-dev libglew-dev
-    
-    - name: Build OSX
-      if: matrix.os == 'macos-latest'
-      run: |
-        GLEW_PREFIX="$(brew --prefix glew)"
-        clang++ -std=c++11 -stdlib=libc++ imgui/examples/example_sdl2_opengl3/main.cpp \
-          imgui/backends/imgui_impl_opengl3.cpp \
-          imgui/backends/imgui_impl_sdl2.cpp \
-          imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
-          imgui/imgui_widgets.cpp imgui/imgui_demo.cpp \
-          FileBrowser/ImGuiFileBrowser.cpp \
-          -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
-          -I imgui \
-          -I imgui/examples \
-          -I imgui/backends \
-          -I FileBrowser \
-          $(sdl2-config --cflags) \
-          -I "$GLEW_PREFIX/include" \
-          $(sdl2-config --libs) \
-          -L "$GLEW_PREFIX/lib" \
-          -lGLEW \
-          -framework OpenGL \
-          -o example_sdl2_opengl3
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DIMGADDONS_BUILD_PREVIEW=ON \
+            -DIMGADDONS_RUNTIME_OUTPUT_DIR="${{ github.workspace }}/build/bin"
 
-    - name: Build Linux
-      if: matrix.os == 'ubuntu-latest'
-      run: |
-        clang++ imgui/examples/example_sdl2_opengl3/main.cpp \
-              imgui/backends/imgui_impl_opengl3.cpp \
-              imgui/backends/imgui_impl_sdl2.cpp     \
-              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
-              imgui/imgui_widgets.cpp imgui/imgui_demo.cpp \
-              FileBrowser/ImGuiFileBrowser.cpp \
-              -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
-              -I imgui \
-              -I imgui/examples \
-              -I imgui/backends \
-              -I /usr/include/SDL2 \
-              -lSDL2 -lGL -lGLEW -ldl \
-              -o example_sdl2_opengl3
-        g++ imgui/examples/example_sdl2_opengl3/main.cpp \
-              imgui/backends/imgui_impl_opengl3.cpp \
-              imgui/backends/imgui_impl_sdl2.cpp     \
-              imgui/imgui.cpp imgui/imgui_draw.cpp imgui/imgui_tables.cpp \
-              imgui/imgui_widgets.cpp imgui/imgui_demo.cpp \
-              FileBrowser/ImGuiFileBrowser.cpp \
-              -DIMGUI_IMPL_OPENGL_LOADER_GLEW \
-              -I imgui \
-              -I imgui/examples \
-              -I imgui/backends \
-              -I /usr/include/SDL2 \
-              -lSDL2 -lGL -lGLEW -ldl \
-              -o example_sdl2_opengl3
+      - name: Build
+        run: |
+          cmake --build build --config Release --parallel
