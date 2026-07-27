@@ -241,12 +241,14 @@ namespace imgui_addons
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.882f, 0.745f, 0.078f,1.0f));
         for(std::vector<std::string>::size_type i = 0; i < current_dirlist.size(); i++)
         {
+            ImGui::PushID(static_cast<int>(i));
             if( ImGui::Button(current_dirlist[i].c_str()) )
             {
                 //If last button clicked, nothing happens
                 if(i != current_dirlist.size() - 1)
                     show_error |= !(onNavigationButtonClick(i));
             }
+            ImGui::PopID();
 
             //Draw Arrow Buttons
             if(i != current_dirlist.size() - 1)
