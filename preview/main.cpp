@@ -9,6 +9,12 @@
 #include <iostream>
 #include <string>
 
+#if defined (WIN32) || defined (_WIN32) || defined (__WIN32)
+#define OSWIN
+#include <windows.h>
+#endif
+
+
 #ifdef __APPLE__
 #define GL_SILENCE_DEPRECATION
 #endif
@@ -65,21 +71,22 @@ static void showMainMenu()
     if (file_dialog.showFileDialog(
             "Open File",
             imgui_addons::ImGuiFileBrowser::DialogMode::OPEN,
-            ImVec2(700, 310),
-            ".rar,.zip,.7z"))
+            ImVec2(900, 520),
+            ".7z,.zip,.rar,*.*"))
     {
         g_last_open_filename = file_dialog.selected_fn;
-        g_last_open_path = file_dialog.selected_path;
-
-        std::cout << "Open filename: " << file_dialog.selected_fn << std::endl;
+        g_last_open_path = file_dialog.selected_path;        
+        
+        std::cout << "Open filename: " << file_dialog.selected_fn << std::endl;        
         std::cout << "Open path: " << file_dialog.selected_path << std::endl;
+        std::cout << "Open file extension: " << file_dialog.ext << std::endl;
     }
 
     if (file_dialog.showFileDialog(
             "Save File",
             imgui_addons::ImGuiFileBrowser::DialogMode::SAVE,
-            ImVec2(700, 310),
-            ".png,.jpg,.bmp"))
+            ImVec2(900, 520),
+            ".png,.jpg,.bmp,*.*"))
     {
         g_last_save_filename = file_dialog.selected_fn;
         g_last_save_path = file_dialog.selected_path;
@@ -122,6 +129,12 @@ int main(int, char**)
     if (!glfwInit())
         return 1;
 
+#ifdef OSWIN
+    // Set the console output code page to UTF-8
+    SetConsoleOutputCP(CP_UTF8);
+
+#endif
+
 #if defined(__APPLE__)
     const char* glsl_version = "#version 150";
 
@@ -137,8 +150,8 @@ int main(int, char**)
 #endif
 
     GLFWwindow* window = glfwCreateWindow(
-        1280,
-        720,
+        1920,
+        1080,
         "ImGui-Addons FileBrowser Preview",
         nullptr,
         nullptr
@@ -174,7 +187,10 @@ int main(int, char**)
     }
 
     ImVec4 clear_color = ImVec4(0.10f, 0.10f, 0.10f, 1.00f);
+    ImFont* myDefaultFont = io.Fonts->AddFontFromFileTTF(TEST_SOURCE_DIR "/preview/fonts/msyh.ttc", 18.0f);
 
+    // Assign it as the default font
+    io.FontDefault = myDefaultFont;
     while (!glfwWindowShouldClose(window))
     {
         glfwPollEvents();

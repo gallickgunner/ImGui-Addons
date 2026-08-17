@@ -1,20 +1,55 @@
-
 ![BUILD STATUS](https://github.com/gallickgunner/ImGui-Addons/actions/workflows/ci.yml/badge.svg)
 ![Dear ImGui version](https://img.shields.io/badge/Dear%20ImGui%20Updated-v1.92.8-blue)
 
 # ImGui-Addons
+
 Addon widgets for GUI library Dear ImGui.
 
 ## File Dialog
-A simple cross-platform file dialog that uses [dirent](https://github.com/tronkko/dirent) interface for reading directories and files. It's present as a standard header file in Unix based systems afaik and is also contained in some compilers like MinGW but I have decided to use Toni Rönkkö's ported version so atleast the code remains compiler independent. Both Open and Save file dialogs are supported. **C++11 is required**.
 
-Code uses ported `dirent.h` provided by Toni on Windows and on UNIX code uses standard `dirent.h` header, but unfortunately the code hasn't been checked extensively on UNIX based systems especially MacOS. So if someone finds problems on other platforms do tell me or submit a pull request. Also I don't think the code will work with Unicode paths containing language specific or other special characters as I blatantly use normal `char*` and `std::string` everywhere. The ported `dirent.h` for Windows uses `wcstombs` function to convert widechars to multibyte sequences but according to the docs this also fails if a wide character that doesnt' correspond to a valid Mulitbyte char is encountered. Anyways Not an expert at this topic so you may find errors if your paths contain special characters outside the normal 0-255 range.
+A simple cross-platform file dialog that supports opening files, saving files and selecting directories.
 
-Thanks to [@Sandy](https://github.com/bwrsandman), the code was tested on linux and runs fine except except that double clicks don't work all the time. This might be due to problems in ImGui itself or a problem on a specific computer only. So if anybody else encounters any issues do tell me.
+## Features
+
+* 3 different modes are supported currently. `OPEN` for opening files, `SAVE` for saving files and `SELECT` for selecting a directory.
+
+* Unicode/UTF-8 aware. Filenames and paths are preserved as UTF-8. Unicode Characters supported by the fonts configured in Dear ImGui can be displayed. Complex-script shaping and bidirectional text rendering are outside the scope of the file dialog.
+
+* The GUI greatly resembles the Windows File Dialog.
+
+* Written in C++11 for compatibility with older code bases.
+
+## Working
+
+Code uses a modified version of Toni's ported [dirent](https://github.com/tronkko/dirent) interface on Windows. On Unix-like systems, the code uses the native `dirent.h` header.
+
+The modified Windows `dirent` implementation treats its narrow-string interface as UTF-8. Windows wide-character filenames are correctly converted between UTF-16 and UTF-8 via the native `MultiByteToWideChar` and `WideCharToMultiByte` API calls.
+
+The file browser considers all paths and filenames returned by `ImGuiFileBrowser` as UTF-8. This differs from the original ported `dirent` implementation, whose narrow-character interface normally follows the active Windows code page.
+
+You will nevertheless need an appropriate font for your console and Dear ImGui to view Unicode characters supported by that font. Complex-script shaping and bidirectional text rendering are outside the scope of the file dialog itself. Check the preview folder and the `CMakeLists.txt` for an example.
+
+Thanks to [@Sandy](https://github.com/bwrsandman), the code was tested on Linux and runs fine.
+
+### Unicode Notes
+
+The file dialog guarantees UTF-8 filename and path preservation, but this does not imply full Unicode linguistic processing.
+
+* Windows filesystem paths are converted between UTF-8 and UTF-16 at the Win32 API boundary.
+* On modern Unix-like systems, filenames are expected to contain UTF-8.
+* Sorting is not locale-aware and is very basic.
+* Case-insensitive sorting and filtering are primarily ASCII-oriented.
+* Unicode normalization is not performed.
+* Complex-script shaping and bidirectional text rendering are not handled by this file dialog.
+
+For example, Arabic or Urdu filenames can be preserved correctly as UTF-8, but correct visual shaping and right-to-left rendering depend on the text-rendering setup used with Dear ImGui.
+
 
 ### Usage
-Make sure all the imgui files are accessible as `imgui.h` and so on without specifying the folder they are in. You must mention the path to the folder they are in, in your IDE. Also make sure `dirent.h` is accessible as `Dirent/dirent.h`. If you don't like these include paths, you can change how `ImGuiFileBrowser.h` and the corresponding cpp file accesses these yourself. Now include `ImGuiFileBrowser.h` and use it like this..
-```
+
+Addon is designed for drop-in style use. Make sure all the ImGui files are accessible as `imgui.h` and so on without specifying the folder they are in. You must mention the path to the folder they are in in your IDE. Also make sure `dirent.h` is accessible as `Dirent/dirent.h`. If you don't like these include paths, you can change how `ImGuiFileBrowser.h` and the corresponding cpp file access these yourself. Now include `ImGuiFileBrowser.h` and use it like this..
+
+```cpp
 ..
 imgui_addons::ImGuiFileBrowser file_dialog; // As a class member or globally
 
@@ -28,10 +63,10 @@ void showMainMenu()
         {
             if (ImGui::MenuItem("Open", NULL))
                 open = true;
-        if (ImGui::MenuItem("Save", NULL))
+            if (ImGui::MenuItem("Save", NULL))
                 save = true;
             
-        ImGui::EndMenu();
+            ImGui::EndMenu();
         }
         ImGui::EndMainMenuBar();
     }
@@ -42,7 +77,7 @@ void showMainMenu()
     if(save)
         ImGui::OpenPopup("Save File");
         
-    /* Optional third parameter. Support opening only compressed rar/zip files. 
+    /* Optional fourth parameter. Support opening only compressed rar/zip/7z files. 
      * Opening any other file will show error, return false and won't close the dialog.
      */
     if(file_dialog.showFileDialog("Open File", imgui_addons::ImGuiFileBrowser::DialogMode::OPEN, ImVec2(700, 310), ".rar,.zip,.7z"))
@@ -54,21 +89,16 @@ void showMainMenu()
     {
         std::cout << file_dialog.selected_fn << std::endl;      // The name of the selected file or directory in case of Select Directory dialog mode
         std::cout << file_dialog.selected_path << std::endl;    // The absolute path to the selected file
-        std::cout << file_dialog.ext << std::endl;              // Access ext separately (For SAVE mode)
+        std::cout << file_dialog.ext << std::endl;              // Access ext separately
         //Do writing of files based on extension here
     }
 }
 ```
-Note that the Save file dialog just stores whatever name the user types in `selected_fn` The user may try to save with a different extension than one already selected in the *extension box* This is upto the programmer, whether to use the extension selected in the UI or the one typed in the file name by the user. I've also added the modified `imgui_demo.cpp` to include the file dialog in the menu bar so you can check how it's working there. 
 
-Enough chitchat, here's a gif in-action, click for full video (I hope you guys don't consider me a weeb after seeing the screensavers collection xD )
+Note that the extension list provided to the `showFileDialog` function must be comma separated without any spaces and must include the `.` character before each extension.
+
+In the `SAVE` mode, if the user types a valid extension from the given list, for e.g. `.jpg` in the example above, inside the input file name region and saves, then the selected extension in the extension drop down box is ignored.
+
+Enough chitchat, here's a gif in-action, click for full video (yes... you saw it right.. those are all anime wallpapers.)
 
 [![Demo](https://i.imgur.com/kNOeYme.gif)](https://www.youtube.com/watch?v=cPyfgYFdiy0)
-
-# Update
-
-So the file dialog has been revamped to closely resemble the Windows file dialog. I've tried my best, and I'm happy with the results.  Some internal workings have changed so gonna highlight them here.
-
-* 3 Different modes are supported currently. `OPEN` for opening files, `SAVE` for saving files an `SELECT` for selecting a directory.
-* There is only a single function call now `showFileDialog()`. A `DialogMode` enum is exposed (with values defined above) publicly which allows switching between different modes.
-* The selected file/folder name and the absolute path can be accessed separately through `selected_fn` and `selected_path` respectively. 

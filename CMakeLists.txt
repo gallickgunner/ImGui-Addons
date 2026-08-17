@@ -229,6 +229,10 @@ if(IMGADDONS_BUILD_PREVIEW)
         )
     endif()
 
+    target_compile_definitions(ImGuiAddonsPreview PRIVATE
+        TEST_SOURCE_DIR="${CMAKE_SOURCE_DIR}"
+    )
+
     set_target_properties(ImGuiAddonsPreview PROPERTIES
         RUNTIME_OUTPUT_DIRECTORY "${IMGADDONS_RUNTIME_OUTPUT_DIR}"
     )

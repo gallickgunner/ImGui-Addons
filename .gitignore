@@ -47,3 +47,5 @@ compile_commands.json
 
 # vcpkg
 vcpkg_installed/
+CMakeSettings.json
+imgui.ini
