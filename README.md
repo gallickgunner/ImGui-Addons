@@ -101,4 +101,5 @@ In the `SAVE` mode, if the user types a valid extension from the given list, for
 Enough chitchat, here's a gif in-action, click for full video (yes... you saw it right.. those are all anime wallpapers.)
 
 <img width="1153" height="705" alt="image" src="https://github.com/user-attachments/assets/eee0cce2-9bde-4ea7-b044-83ce66cfff60" />
+
 [![Demo](https://i.imgur.com/kNOeYme.gif)](https://www.youtube.com/watch?v=cPyfgYFdiy0)
