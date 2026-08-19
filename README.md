@@ -36,7 +36,6 @@ Thanks to [@Sandy](https://github.com/bwrsandman), the code was tested on Linux 
 The file dialog guarantees UTF-8 filename and path preservation, but this does not imply full Unicode linguistic processing.
 
 * Windows filesystem paths are converted between UTF-8 and UTF-16 at the Win32 API boundary.
-* On modern Unix-like systems, filenames are expected to contain UTF-8.
 * Sorting is not locale-aware and is very basic.
 * Case-insensitive sorting and filtering are primarily ASCII-oriented.
 * Unicode normalization is not performed.
@@ -101,4 +100,5 @@ In the `SAVE` mode, if the user types a valid extension from the given list, for
 
 Enough chitchat, here's a gif in-action, click for full video (yes... you saw it right.. those are all anime wallpapers.)
 
+<img width="1153" height="705" alt="image" src="https://github.com/user-attachments/assets/eee0cce2-9bde-4ea7-b044-83ce66cfff60" />
 [![Demo](https://i.imgur.com/kNOeYme.gif)](https://www.youtube.com/watch?v=cPyfgYFdiy0)
