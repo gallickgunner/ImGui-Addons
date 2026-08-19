@@ -44,7 +44,7 @@ The file dialog guarantees UTF-8 filename and path preservation, but this does n
 For example, Arabic or Urdu filenames can be preserved correctly as UTF-8, but correct visual shaping and right-to-left rendering depend on the text-rendering setup used with Dear ImGui.
 
 
-### Usage
+## Usage
 
 Addon is designed for drop-in style use. Make sure all the ImGui files are accessible as `imgui.h` and so on without specifying the folder they are in. You must mention the path to the folder they are in in your IDE. Also make sure `dirent.h` is accessible as `Dirent/dirent.h`. If you don't like these include paths, you can change how `ImGuiFileBrowser.h` and the corresponding cpp file access these yourself. Now include `ImGuiFileBrowser.h` and use it like this..
 
